@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scen:scene endFrame="1000" xmlns:scen="http://caliri.com/motion/scene">
+  <scen:axis integral="false" runMaxVelocity="2000" viewPosition="10" name="Blender" graphHide="false" pulseRate="1" graphSolo="false" base="0" connectionType="1" stepsPerUnit="1" connectionChannel="1" acceleration="2" runMaxAcceleration="1000" frameToFrameSpeed="8" indexCount="1" graphColor="-48806"/>
+  <scen:virtualConfiguration type="0">
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+  </scen:virtualConfiguration>
+</scen:scene>

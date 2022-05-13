@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scen:scene endFrame="1000" xmlns:scen="http://caliri.com/motion/scene">
+  <scen:axis integral="false" runMaxVelocity="2000" viewPosition="10" name="Blender" graphHide="false" pulseRate="1" graphSolo="false" base="0" connectionType="1" stepsPerUnit="1" connectionChannel="1" acceleration="2" runMaxAcceleration="1000" frameToFrameSpeed="8" indexCount="1" graphColor="-48806">
+    <scen:points x="1" y="1" type="5"/>
+    <scen:points x="1000" y="1000" type="5"/>
+    <scen:controlPoints x="1" y="1"/>
+    <scen:controlPoints x="1000" y="1000"/>
+    <scen:ghostNodes tickColor="0" tickPlaybackSync="false" smooth="false" strokeWidth="0" opacity="0" tickStrokeWidth="0" tickPlaybackFrame="0" userData="0" tickCount="0" color="0" tickPlayback="false" closed="false" pencil="false"/>
+    <scen:adjustmentLayerLevels expanded="false" locationY="0" light="0" showBadge="false" locationX="0">
+      <scen:keyframes smooth="0" smoothRight="0" smoothLeft="0" level="1" frame="1"/>
+    </scen:adjustmentLayerLevels>
+  </scen:axis>
+  <scen:virtualConfiguration type="0">
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+    <scen:axis>-1</scen:axis>
+  </scen:virtualConfiguration>
+</scen:scene>
