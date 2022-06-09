@@ -22,7 +22,7 @@ class URMocoState(bpy.types.PropertyGroup):
                 region.tag_redraw()
         return None
 
-    status: bpy.props.StringProperty(default="Setting up", update=redraw_panel)
+    status: bpy.props.StringProperty(default="Robot disconnected or not powered on", update=redraw_panel)
     mode: bpy.props.StringProperty(default=Mode.DISCONNECTED.value, update=redraw_panel)
     running_in_modal: bpy.props.BoolProperty(default=False, update=redraw_panel)
 

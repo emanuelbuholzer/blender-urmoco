@@ -1,6 +1,8 @@
 import time
-
+import logging
 from urmoco.backend.modes import apply_modes
+
+logger = logging.getLogger(__name__)
 
 
 def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_out_queue, dfmoco_out_queue):
@@ -42,6 +44,14 @@ def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_ou
         robot.set_payload(state["payload"])
         time.sleep(1)
         dashboard.release_brakes()
+        time.sleep(2)
+        joints = robot.get_configuration()
+        urmoco_out_queue.put({
+            "type": "sync",
+            "payload": {
+                "joints": joints
+            }
+        })
         time.sleep(2)
         urmoco_out_queue.put({"type": "power_on"})
 

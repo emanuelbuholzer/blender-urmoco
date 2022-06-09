@@ -36,6 +36,7 @@ if "bpy" in sys.modules:
     from logging.handlers import TimedRotatingFileHandler
     from pathlib import Path
     from xdg import XDG_CACHE_HOME
+    from bpy.app.handlers import persistent
 
     # Setup logging over stdout and a rotating log file
     logger = logging.getLogger(__name__)
@@ -75,6 +76,12 @@ if "bpy" in sys.modules:
     # Load bpy types which are dependent on queues or configs
     operators = get_operators(config, urmoco_in_queue, urmoco_out_queue)
     sync = get_urmoco_sync(config, urmoco_in_queue, urmoco_out_queue)
+
+    @persistent
+    def load_handler(dummy):
+        urmoco_in_queue.put({"type": "hi"})
+
+    bpy.app.handlers.load_post.append(load_handler)
 
     def register():
         # Start processes

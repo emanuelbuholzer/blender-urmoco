@@ -21,11 +21,12 @@ class RobotClient:
             exc_type = args.exc_type
             exc_value = args.exc_value
 
-            logger.error(f"EXCEPTION THREADING: {exc_type}, {exc_value}")
+            logger.error(f"Threading exception: {exc_type}, {exc_value}")
             logger.error(f"{type(exc_type)}")
             if isinstance(exc_type, socket.timeout):
-                logger.error("HALLO RESET")
                 self.robot.secmon = urx.ursecmon.SecondaryMonitor(self.config.get('robot.host'))
+            else:
+                raise Exception(exc_value)
 
         return threading_excepthook
 
