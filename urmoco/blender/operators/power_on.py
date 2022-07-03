@@ -25,6 +25,8 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
 
         def on_request(self, context, request):
             if request["type"] == "power_on":
+                set_mode(context, Mode.ON)
+                set_status_text(context, "Powered on")
                 return {'FINISHED'}
 
     return [PowerOnOperator]

@@ -42,12 +42,23 @@ async def is_moving(state, response_payload, writer):
     await writer.drain()
 
 
+async def handle_move_timeout(state, _response_payload, writer):
+    await is_moving(state, {'is_moving': False}, writer)
+    await set_frame(state, {'current_frame': -1}, writer)
+
+
+async def handle_move_success(state, response_payload, writer):
+    await is_moving(state, {'is_moving': False}, writer)
+    await set_frame(state, {'current_frame': response_payload['frame']})
+
 response_handlers = {
     'stop_all': stop_all,
     'stop_motor': stop_motor,
     'set_frame': set_frame,
     'move_to_frame': move_to_frame,
     'is_moving': is_moving,
+    'move_timeout': handle_move_timeout,
+    'move_success': handle_move_success
 }
 
 
@@ -70,4 +81,3 @@ async def run(config, state, out_queue, writer):
             writer.write(bytes(heartbeat_message, encoding='ascii'))
             await writer.drain()
             await asyncio.sleep(config.get('dfmoco.producer_interval_seconds'))
-

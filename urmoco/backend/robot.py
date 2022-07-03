@@ -1,10 +1,7 @@
 import errno
-
-import urx
-import urx.ursecmon
 import logging
-import threading
-import socket
+import rtde_control
+import rtde_receive
 
 logger = logging.getLogger(__name__)
 
@@ -13,55 +10,50 @@ class RobotClient:
 
     def __init__(self, config):
         self.config = config
-        self.robot = None
-        threading.excepthook = self.get_threading_excepthook()
-
-    def get_threading_excepthook(self):
-        def threading_excepthook(args):
-            exc_type = args.exc_type
-            exc_value = args.exc_value
-
-            logger.error(f"Threading exception: {exc_type}, {exc_value}")
-            logger.error(f"{type(exc_type)}")
-            if isinstance(exc_type, socket.timeout):
-                self.robot.secmon = urx.ursecmon.SecondaryMonitor(self.config.get('robot.host'))
-            else:
-                raise Exception(exc_value)
-
-        return threading_excepthook
+        self.rtde_r: rtde_receive.RTDEReceiveInterface = None
+        self.rtde_c: rtde_control.RTDEControlInterface = None
 
     def connect(self):
         try:
-            self.robot = urx.Robot(self.config.get('robot.host'))
-        except (urx.ursecmon.TimeoutException, socket.timeout, OSError) as e:
-            if isinstance(e, OSError) and not isinstance(e, socket.timeout):
-                if e.errno not in {errno.EHOSTUNREACH, errno.EHOSTDOWN}:
-                    raise e
-            self.robot = None
+            self.rtde_r = rtde_receive.RTDEReceiveInterface("127.0.0.1")
+            self.rtde_c = rtde_control.RTDEControlInterface("127.0.0.1")
+        except Exception as e:
+            self.rtde_r = None
+            self.rtde_c = None
+            pass
+
+    def disconnect(self):
+        self.rtde_r.disconnect()
+        self.rtde_c.disconnect()
 
     def is_connected(self):
-        return self.robot is not None
+        return self.rtde_r is not None and self.rtde_c is not None and self.rtde_r.isConnected() and self.rtde_c.isConnected()
 
     def set_tool_center_point(self, tcp):
-        self.robot.set_tcp(tcp)
+        self.rtde_c.setTcp(list(tcp))
 
     def set_payload(self, weight_kg):
-        self.robot.set_payload(weight_kg)
+        self.rtde_c.setPayload(float(weight_kg), [0.0,0.0,0.0])
 
     def move_to_configuration(self, q):
-        self.robot.movej(q, wait=False)
+        self.rtde_c.moveJ(list(q), 0.5, 0.3, True)
 
     def get_configuration(self):
-        return self.robot.getj()
+        return tuple(self.rtde_r.getActualQ())
 
-    def get_joints_distance(self, target_joints):
-        return self.robot._get_dist(target_joints, joints=True)
+    def get_joints_distance(self, target):
+        q = self.get_configuration()
+        dist = 0
+        for i in range(6):
+            dist += (target[i] - q[i]) ** 2
+        return dist ** 0.5
 
     def start_freedrive(self):
-        self.robot.set_freedrive(True, self.config.get('robot.freedrive_timeout_seconds'))
+        if not self.rtde_c.freedriveMode():
+            raise Exception("Could not enter freedrive mode")
 
     def stop_freedrive(self):
-        self.robot.set_freedrive(False)
+        self.rtde_c.endFreedriveMode()
 
     def stop(self):
-        self.robot.stop()
+        self.rtde_c.stopJ(2.0)

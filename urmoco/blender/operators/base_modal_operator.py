@@ -4,7 +4,6 @@ import bpy
 import roboticstoolbox as rtb
 import mathutils
 import numpy as np
-from spatialmath import SE3
 
 from urmoco.blender.sync import handle_reqs
 

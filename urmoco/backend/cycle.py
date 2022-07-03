@@ -1,7 +1,6 @@
+import logging
 import queue
 import time
-import logging
-import urx.ursecmon
 
 from urmoco.backend.dfmoco import handle_dfmoco_request
 from urmoco.backend.modes import apply_modes
@@ -29,8 +28,6 @@ def run_cycle(config, state, robot, dashboard, urmoco_in_queue, dfmoco_in_queue,
     except queue.Empty:
         # There was no urmoco request, we continue
         pass
-    except urx.ursecmon.TimeoutException:
-        logger.info("A read timeout occured, ignoring.")
 
     # If the robot is moving we need to handle the move, thus check for timeouts and the completion of the move
     if state["move"]["active"]:

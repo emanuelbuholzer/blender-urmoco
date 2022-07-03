@@ -1,28 +1,14 @@
 import time
 import logging
 from urmoco.backend.modes import apply_modes
+from urmoco.backend.state import get_initial_state
 
 logger = logging.getLogger(__name__)
 
 
 def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_out_queue, dfmoco_out_queue):
     if urmoco_req["type"] == "hi":
-        state = {
-            'shooting': False,
-            'frame': -1,
-            'robot_mode': None,
-            'safety_mode': None,
-            'payload': config.get('robot.payload'),
-            'move': {
-                'active': False,
-                'target_joints': None,
-                'target_frame': None,
-                'time_elapsed_seconds': 0.
-            },
-            'cycle': {
-                'prev_duration_seconds': 0.,
-            }
-        }
+        state = get_initial_state()
         robot_mode = dashboard.get_mode()
         safety_mode = dashboard.get_safety_mode()
         apply_modes(state, robot_mode, safety_mode, urmoco_out_queue)

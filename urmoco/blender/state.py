@@ -1,16 +1,6 @@
 import bpy
-from enum import Enum
 
-
-class Mode(Enum):
-    LOCKED = "LOCKED"
-    OFF = "OFF"
-    ON = "ON"
-    DISCONNECTED = "DISCONNECTED"
-    FREEDRIVE = "FREEDRIVE"
-    SHOOTING = "SHOOTING"
-    AWAIT_RESPONSE = "AWAIT_RESPONSE"
-    ERROR = "ERROR"
+from urmoco.mode import Mode
 
 
 class URMocoState(bpy.types.PropertyGroup):

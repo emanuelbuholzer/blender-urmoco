@@ -10,8 +10,8 @@ def test_given_value():
 
 def test_hard_coded_value():
     config = Config({})
-    ur_host = config.get("dashboard.port")
-    assert ur_host == 29999
+    dfmoco_port = config.get("dfmoco.port")
+    assert dfmoco_port == 25555
 
 
 def test_array_without_string_name():
@@ -25,7 +25,6 @@ def test_array_without_string_name():
 def test_parent_access():
     config = Config({"hal": {"va": 1, "bla": 2}})
     hal = config.get("hal")
-    print(hal)
     assert hal == {"va": 1, "bla": 2}
 
 
