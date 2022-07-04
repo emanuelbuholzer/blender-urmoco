@@ -1,6 +1,8 @@
 import logging
 import bpy
 
+from urmoco.blender.constants import ARMATURE_MODEL
+from urmoco.blender.rig import get_q
 from urmoco.blender.state import Mode, set_mode, set_status_text, get_mode
 from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
 
@@ -36,15 +38,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
                 self._last_frame = frame
 
                 bpy.context.scene.frame_set(frame)
-                configuration = [
-                    bpy.data.objects["Armature"].pose.bones["Shoulder pan 0"].rotation_euler[1],
-                    bpy.data.objects["Armature"].pose.bones["Shoulder lift 0"].rotation_euler[1],
-                    bpy.data.objects["Armature"].pose.bones["Elbow 0"].rotation_euler[1] * -1,
-                    bpy.data.objects["Armature"].pose.bones["Wrist joint 1 0"].rotation_euler[1],
-                    bpy.data.objects["Armature"].pose.bones["Wrist joint 2 0"].rotation_euler[1],
-                    bpy.data.objects["Armature"].pose.bones["Wrist joint 3 0"].rotation_euler[1]
-                ]
-
+                configuration = get_q(ARMATURE_MODEL)
                 urmoco_in_queue.put({
                     "type": "transfer",
                     "payload": {

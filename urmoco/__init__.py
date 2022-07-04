@@ -20,7 +20,7 @@ if "bpy" in sys.modules:
     # Install dependencies. This takes a while..
     __import__('ensurepip')._bootstrap()
     __import__('pip._internal')._internal.main(['install', '-U', 'pip', 'setuptools', 'wheel'])
-    __import__('pip._internal')._internal.main(['install', 'ur_rtde', 'roboticstoolbox-python', 'xdg'])
+    __import__('pip._internal')._internal.main(['install', 'ur_rtde', 'xdg'])
 
     from .blender.operators import get_operators
     from .blender.state import URMocoState

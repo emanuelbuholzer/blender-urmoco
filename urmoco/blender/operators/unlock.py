@@ -24,7 +24,9 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             set_status_text(context, "Unlocking")
 
         def on_request(self, context, request):
-            if request["type"] == "sync":
+            if request["type"] == "unlock":
+                set_mode(context, Mode.ON)
+                set_status_text(context, "Unlocked robot")
                 return {'FINISHED'}
 
     return [UnlockOperator]

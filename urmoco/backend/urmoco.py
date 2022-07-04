@@ -46,6 +46,7 @@ def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_ou
         time.sleep(2)
         dashboard.release_brakes()
         time.sleep(3)
+        urmoco_out_queue.put({"type": "unlock"})
 
     if urmoco_req["type"] == "start_shooting":
         state["shooting"] = True

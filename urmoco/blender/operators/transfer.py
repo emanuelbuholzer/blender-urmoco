@@ -1,8 +1,9 @@
-import bpy
 import logging
 
+from urmoco.blender.constants import ARMATURE_MODEL
 from urmoco.blender.state import Mode, set_mode, set_status_text, get_mode
 from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
+from urmoco.blender.rig import get_q
 
 
 logger = logging.getLogger(__name__)
@@ -20,14 +21,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             return get_mode(context) is Mode.ON
 
         def on_execute(self, context):
-            configuration = [
-                bpy.data.objects["Armature"].pose.bones["Shoulder pan 0"].rotation_euler[1],
-                bpy.data.objects["Armature"].pose.bones["Shoulder lift 0"].rotation_euler[1],
-                bpy.data.objects["Armature"].pose.bones["Elbow 0"].rotation_euler[1] * -1,
-                bpy.data.objects["Armature"].pose.bones["Wrist joint 1 0"].rotation_euler[1],
-                bpy.data.objects["Armature"].pose.bones["Wrist joint 2 0"].rotation_euler[1],
-                bpy.data.objects["Armature"].pose.bones["Wrist joint 3 0"].rotation_euler[1]
-            ]
+            configuration = get_q(ARMATURE_MODEL)
 
             urmoco_in_queue.put({
                 "type": "transfer",
@@ -52,5 +46,6 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             if request["type"] == "move_timeout":
                 set_mode(context, Mode.ON)
                 set_status_text(context, f"Move timed out (not at target)")
+                return {'CANCELLED'}
 
     return [TransferPoseOperator]

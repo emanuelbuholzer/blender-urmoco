@@ -1,17 +1,13 @@
-import queue
 import logging
-import bpy
-import roboticstoolbox as rtb
-import mathutils
-import numpy as np
+import queue
 
+import bpy
+
+from urmoco.blender.constants import ARMATURE_MODEL
+from urmoco.blender.rig import apply_q
 from urmoco.blender.sync import handle_reqs
 
 logger = logging.getLogger(__name__)
-
-# Create a robot model that is equal to our rig in Blender
-robot_model = rtb.models.DH.UR10()
-robot_model.base = robot_model.base @ SE3.Tz(1.2) @ SE3(np.eye(4) * np.array([-1, -1, 1, 1]))
 
 
 def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
@@ -32,29 +28,7 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
 
                     if request["type"] == "sync":
                         new_configuration = request["payload"]["joints"]
-                        trans_matrix = mathutils.Matrix(np.array(robot_model.fkine(new_configuration)))
-                        euler_angles = trans_matrix.to_euler()
-
-                        # First we update the ik control according to the joint angles to go to the new tcp
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].rotation_euler[0] = euler_angles[0]
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].rotation_euler[1] = euler_angles[1]
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].rotation_euler[2] = euler_angles[2]
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].location[0] = trans_matrix[0][3]
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].location[1] = trans_matrix[1][3]
-                        bpy.context.scene.objects["Armature"].pose.bones["IK Control"].location[2] = trans_matrix[2][3]
-
-                        # Once we are at our target, we want to update our joints in order to get the correct IK solution
-                        bpy.data.objects["Armature"].pose.bones["Shoulder pan 0"].rotation_euler[1] = new_configuration[
-                            0]
-                        bpy.data.objects["Armature"].pose.bones["Shoulder lift 0"].rotation_euler[1] = \
-                            new_configuration[1]
-                        bpy.data.objects["Armature"].pose.bones["Elbow 0"].rotation_euler[1] = new_configuration[2] * -1
-                        bpy.data.objects["Armature"].pose.bones["Wrist joint 1 0"].rotation_euler[1] = \
-                            new_configuration[3]
-                        bpy.data.objects["Armature"].pose.bones["Wrist joint 2 0"].rotation_euler[1] = \
-                            new_configuration[4]
-                        bpy.data.objects["Armature"].pose.bones["Wrist joint 3 0"].rotation_euler[1] = \
-                            new_configuration[5]
+                        apply_q(ARMATURE_MODEL, new_configuration)
 
                     response = self.on_request(context, request)
                     if response is {'FINISHED'}:

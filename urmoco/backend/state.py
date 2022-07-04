@@ -1,4 +1,4 @@
-from urmoco import Config
+from urmoco.config import Config
 
 config = Config({})
 
