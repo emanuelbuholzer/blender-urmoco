@@ -15,11 +15,12 @@ class RobotClient:
 
     def connect(self):
         try:
-            self.rtde_r = rtde_receive.RTDEReceiveInterface("127.0.0.1")
-            self.rtde_c = rtde_control.RTDEControlInterface("127.0.0.1")
+            self.rtde_r = rtde_receive.RTDEReceiveInterface(self.config.get("robot.host"))
+            self.rtde_c = rtde_control.RTDEControlInterface(self.config.get("robot.host"))
         except Exception as e:
             self.rtde_r = None
             self.rtde_c = None
+            logger.error(e)
             pass
 
     def disconnect(self):
