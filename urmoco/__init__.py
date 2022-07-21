@@ -29,8 +29,8 @@ if "bpy" in sys.modules:
     from .blender.messagebox import MessageBox
     from .dfmoco.proc import run as run_dfmoco
     from .backend.proc import run as run_urmoco
+    from urmoco.scheduler import Scheduler
     from .config import Config
-    import multiprocessing as mp
     import logging
     import bpy
     from logging.handlers import TimedRotatingFileHandler
@@ -53,50 +53,28 @@ if "bpy" in sys.modules:
         handler = TimedRotatingFileHandler(path, when="d", interval=1, backupCount=7)
         handler.setFormatter(formatter)
         return handler
-    logger.addHandler(file_handler("dfmoco2ur.log"))
+    logger.addHandler(file_handler("urmoco.log"))
 
     # Initialise and load configuration.
     config = Config({})
     config.load_from_file()
 
-    # Setup multiprocessing. Note that this will not work on windows, as fork is not available there,
-    # which is needed to schedule process from within Blender.
-    mp_context = mp.get_context('fork')
-
-    dfmoco_in_queue = mp_context.Queue()
-    dfmoco_out_queue = mp_context.Queue()
-    urmoco_in_queue = mp_context.Queue()
-    urmoco_out_queue = mp_context.Queue()
-
-    procs = {
-        'dfmoco': None,
-        'urmoco': None
-    }
+    scheduler = Scheduler(config)
 
     # Load bpy types which are dependent on queues or configs
-    operators = get_operators(config, urmoco_in_queue, urmoco_out_queue)
-    sync = get_urmoco_sync(config, urmoco_in_queue, urmoco_out_queue)
+    operators = get_operators(config, scheduler.ur_in_q, scheduler.ur_out_q)
+    sync = get_urmoco_sync(config, scheduler.ur_in_q, scheduler.ur_out_q)
 
     @persistent
     def load_handler(dummy):
-        urmoco_in_queue.put({"type": "hi"})
+        scheduler.ur_in_q.put({"type": "hi"})
 
     bpy.app.handlers.load_post.append(load_handler)
 
     def register():
         # Start processes
-        if procs["dfmoco"] is None:
-            procs["dfmoco"] = mp_context.Process(target=run_dfmoco, name="DFMoco Server",
-                                                args=(config, dfmoco_in_queue, dfmoco_out_queue), daemon=True)
-        procs["dfmoco"].start()
-        logger.info(f"DFMoco process started with PID {procs['dfmoco'].pid}")
-
-        if procs["urmoco"] is None:
-            procs["urmoco"] = mp_context.Process(target=run_urmoco, name="URMoco Backend",
-                                                 args=(config, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_queue),
-                                                 daemon=True)
-        procs["urmoco"].start()
-        logger.info(f"URMoco process started with PID {procs['urmoco'].pid}")
+        scheduler.start_dfmoco_server()
+        scheduler.start_backend()
 
         # Register bpy classes
         bpy.utils.register_class(URMocoState)
@@ -112,7 +90,7 @@ if "bpy" in sys.modules:
         bpy.app.timers.register(sync, persistent=True)
 
         # Say hi to the backend to get the initial state
-        urmoco_in_queue.put({"type": "hi"})
+        scheduler.ur_in_q.put({"type": "hi"})
 
     def unregister():
         # Unregister bpy classes
@@ -128,10 +106,6 @@ if "bpy" in sys.modules:
         bpy.app.timers.unregister(sync)
 
         # Terminate processes
-        procs["dfmoco"].terminate()
-        logger.info("Terminated DFMoco process")
-        procs["dfmoco"] = None
+        scheduler.terminate_dfmoco_server()
 
-        procs["urmoco"].terminate()
-        logger.info("Terminated URMoco process")
-        procs["urmoco"] = None
+        scheduler.terminate_backend()

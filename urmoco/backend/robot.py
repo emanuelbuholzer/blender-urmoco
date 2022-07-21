@@ -27,6 +27,12 @@ class RobotClient:
         self.rtde_r.disconnect()
         self.rtde_c.disconnect()
 
+    def reconnect(self):
+        if not self.rtde_c.isConnected():
+            self.rtde_c.reconnect()
+        if not self.rtde_r.isConnected():
+            self.rtde_r.reconnect()
+
     def is_connected(self):
         return self.rtde_r is not None and self.rtde_c is not None and self.rtde_r.isConnected() and self.rtde_c.isConnected()
 
@@ -50,11 +56,11 @@ class RobotClient:
         return dist ** 0.5
 
     def start_freedrive(self):
-        if not self.rtde_c.freedriveMode():
+        if not self.rtde_c.teachMode():
             raise Exception("Could not enter freedrive mode")
 
     def stop_freedrive(self):
-        self.rtde_c.endFreedriveMode()
+        self.rtde_c.endTeachMode()
 
     def stop(self):
         self.rtde_c.stopJ(2.0)

@@ -15,6 +15,12 @@ def run_cycle(config, state, robot, dashboard, urmoco_in_queue, dfmoco_in_queue,
     # operation that could potentially time out.
     cycle_start_time = time.time()
 
+    # Check for connectivity
+    if not robot.is_connected():
+        robot.reconnect()
+    if not robot.is_connected():
+        urmoco_out_queue.put({"type": "disconnected"})
+
     # Handle and apply robot and safety modes
     robot_mode = dashboard.get_mode()
     safety_mode = dashboard.get_safety_mode()
