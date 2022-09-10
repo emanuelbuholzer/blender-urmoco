@@ -49,7 +49,7 @@ async def handle_move_timeout(state, _response_payload, writer):
 
 async def handle_move_success(state, response_payload, writer):
     await is_moving(state, {'is_moving': False}, writer)
-    await set_frame(state, {'current_frame': response_payload['frame']})
+    await set_frame(state, {'current_frame': response_payload['frame']}, writer)
 
 response_handlers = {
     'stop_all': stop_all,
