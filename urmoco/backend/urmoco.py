@@ -6,11 +6,11 @@ from urmoco.backend.state import get_initial_state
 logger = logging.getLogger(__name__)
 
 
-def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_out_queue, dfmoco_out_queue):
+def handle_urmoco_request(urmoco_req, state, robot, urmoco_out_queue, dfmoco_out_queue):
     if urmoco_req["type"] == "hi":
         state = get_initial_state()
-        robot_mode = dashboard.get_mode()
-        safety_mode = dashboard.get_safety_mode()
+        robot_mode = robot.get_mode()
+        safety_mode = robot.get_safety_mode()
         apply_modes(state, robot_mode, safety_mode, urmoco_out_queue)
 
         robot.set_tool_center_point((0, 0, 0.1, 0, 0, 0))
@@ -18,18 +18,17 @@ def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_ou
         time.sleep(1)
 
     if urmoco_req["type"] == "power_off":
-        dashboard.power_off()
+        robot.power_off()
 
     if urmoco_req["type"] == "power_on":
-        dashboard.close_popup()
-        dashboard.close_safety_popup()
+        robot.close_popups()
         time.sleep(0.5)
-        dashboard.power_on()
+        robot.power_on()
         time.sleep(3)
         robot.set_tool_center_point((0, 0, 0.1, 0, 0, 0))
         robot.set_payload(state["payload"])
         time.sleep(1)
-        dashboard.release_brakes()
+        robot.release_brakes()
         time.sleep(2)
         joints = robot.get_configuration()
         urmoco_out_queue.put({
@@ -42,9 +41,9 @@ def handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_ou
         urmoco_out_queue.put({"type": "power_on"})
 
     if urmoco_req["type"] == "unlock":
-        dashboard.unlock_protective_stop()
+        robot.unlock_protective_stop()
         time.sleep(2)
-        dashboard.release_brakes()
+        robot.release_brakes()
         time.sleep(3)
         urmoco_out_queue.put({"type": "unlock"})
 

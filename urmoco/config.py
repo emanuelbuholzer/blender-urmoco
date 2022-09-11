@@ -15,6 +15,9 @@ defaults = {
     'robot': {
         'host': '192.168.5.42',
         'payload': 1,
+        'joint_move_speed': 0.5,
+        'joint_move_acceleration': 0.3,
+        'joint_stop_speeed': 2.0,
         'freedrive_timeout_seconds': 86400,
         'move_timeout_seconds': 120,
         'target_distance_threshold': 0.001,

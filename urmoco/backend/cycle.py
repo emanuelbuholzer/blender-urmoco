@@ -10,7 +10,7 @@ from urmoco.backend.urmoco import handle_urmoco_request
 logger = logging.getLogger(__name__)
 
 
-def run_cycle(config, state, robot, dashboard, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_queue):
+def run_cycle(config, state, robot, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_queue):
     # The duration of each cycle is measured in order to support long
     # operation that could potentially time out.
     cycle_start_time = time.time()
@@ -22,15 +22,15 @@ def run_cycle(config, state, robot, dashboard, urmoco_in_queue, dfmoco_in_queue,
         urmoco_out_queue.put({"type": "disconnected"})
 
     # Handle and apply robot and safety modes
-    robot_mode = dashboard.get_mode()
-    safety_mode = dashboard.get_safety_mode()
+    robot_mode = robot.get_mode()
+    safety_mode = robot.get_safety_mode()
     if robot_mode != state["robot_mode"] or safety_mode != state["safety_mode"]:
         apply_modes(state, robot_mode, safety_mode, urmoco_out_queue)
 
     # Handle incoming urmoco requests from blender
     try:
         urmoco_req = urmoco_in_queue.get_nowait()
-        handle_urmoco_request(config, urmoco_req, state, robot, dashboard, urmoco_out_queue, dfmoco_out_queue)
+        handle_urmoco_request(urmoco_req, state, robot, urmoco_out_queue, dfmoco_out_queue)
     except queue.Empty:
         # There was no urmoco request, we continue
         pass
