@@ -16,6 +16,7 @@ def test_move_reaching_target():
 
     robot = Mock()
     robot.get_joints_distance = Mock(return_value=0.000001)
+    robot.is_steady = Mock(return_value=True)
 
     # Act
     handle_move(config, state, robot, ur_out_q, df_out_q)
@@ -83,3 +84,28 @@ def test_move_timeout_will_stop():
 
     ur_out_q.put.assert_called_once_with({'type': 'move_timeout'})
     df_out_q.put.assert_called_once_with({'type': 'move_timeout'})
+
+
+def test_move_reaching_target_not_steady_will_wait():
+    # Arrange
+    config = Config({})
+    ur_out_q = Mock()
+    df_out_q = Mock()
+
+    state = get_initial_state()
+    state["move"]["active"] = True
+    state["move"]["target_frame"] = 12
+
+    robot = Mock()
+    robot.get_joints_distance = Mock(return_value=0.000001)
+    robot.is_steady = Mock(return_value=False)
+
+    # Act
+    handle_move(config, state, robot, ur_out_q, df_out_q)
+
+    # Assert
+    assert state["move"]["active"] is True
+
+    robot.stop.assert_not_called()
+    ur_out_q.put.assert_not_called()
+    df_out_q.put.assert_not_called()

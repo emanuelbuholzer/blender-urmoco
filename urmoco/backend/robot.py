@@ -37,15 +37,21 @@ class RobotClient:
     def is_connected(self):
         lost_connection = False
 
-        if self.dashboard_client is not None and not self.dashboard_client.isConnected():
+        if self.dashboard_client is None:
+            lost_connection = True
+        elif not self.dashboard_client.isConnected():
             logger.debug("Lost connection to the dashboard interface")
             lost_connection = True
 
-        if self.rtde_r is not None and not self.rtde_r.isConnected():
+        if self.rtde_r is None:
+            lost_connection = True
+        elif not self.rtde_r.isConnected():
             logger.debug("Lost connection to the rtde receive interface")
             lost_connection = True
 
-        if self.rtde_c is not None and not self.rtde_c.isConnected():
+        if self.rtde_c is None:
+            lost_connection = True
+        elif not self.rtde_c.isConnected():
             logger.debug("Lost connection to the rtde control interface")
             lost_connection = True
 
@@ -132,3 +138,6 @@ class RobotClient:
     def close_popups(self):
         self.dashboard_client.closePopup()
         self.dashboard_client.closeSafetyPopup()
+
+    def is_steady(self):
+        return self.rtde_c.isSteady()
