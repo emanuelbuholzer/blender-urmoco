@@ -7,7 +7,6 @@ initial_state = {
     'frame': -1,
     'robot_mode': None,
     'safety_mode': None,
-    'payload': config.get('robot.payload'),
     'move': {
         'active': False,
         'target_joints': None,
@@ -16,7 +15,8 @@ initial_state = {
     },
     'cycle': {
         'prev_duration_seconds': 0.
-    }
+    },
+    'terminated': False
 }
 
 

@@ -30,7 +30,9 @@ defaults = {
 class Config:
 
     def __init__(self, config):
-        self.config = config
+        base = defaults.copy()
+        base.update(config)
+        self.config = base
 
     @staticmethod
     def _get(key, config):
@@ -54,9 +56,9 @@ class Config:
         # Parse the configuration and run the schedule
         try:
             with open(config_path, 'r') as raw_config:
-                self.config = json.load(raw_config)
+                self.config.update(json.load(raw_config))
         except FileNotFoundError:
-            logging.info("No configuration file found, ignoring.")
+            logging.debug("No configuration file found, ignoring.")
 
     def get(self, key):
         try:

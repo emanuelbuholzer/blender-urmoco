@@ -29,7 +29,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
                     "target_joints": configuration
                 }
             })
-            set_mode(context, Mode.AWAIT_RESPONSE)
+            set_mode(context, Mode.MOVING)
             set_status_text(context, "Moving to target")
 
         def on_request(self, context, request):

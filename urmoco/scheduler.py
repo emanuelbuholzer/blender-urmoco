@@ -2,7 +2,6 @@ import multiprocessing as mp
 import logging
 import multiprocessing.context
 
-from urmoco.config import Config
 from urmoco.dfmoco.proc import run as run_df
 from urmoco.backend.proc import run as run_backend
 
@@ -10,9 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Scheduler:
-    def __init__(self, config):
-        self.config: Config = config
-
+    def __init__(self):
         # Setup multiprocessing. Note that this will not work on windows, as fork is not available there ;)
         self.ctx: multiprocessing.context.ForkContext = mp.get_context('fork')
 
@@ -24,12 +21,12 @@ class Scheduler:
         self.df_server_proc: mp.Process = None
         self.backend_proc: mp.Process = None
 
-    def start_dfmoco_server(self):
+    def start_dfmoco_server(self, config):
         logger.info("Starting the DFMoco server process")
         if self.df_server_proc is None:
             self.df_server_proc = \
                 self.ctx.Process(target=run_df, name="DFMoco server",
-                                 args=(self.config, self.df_in_q, self.df_out_q),
+                                 args=(config, self.df_in_q, self.df_out_q),
                                  daemon=True)
             self.df_server_proc.start()
             logger.info(f"DFMoco server process started with PID {self.df_server_proc.pid}")
@@ -45,12 +42,12 @@ class Scheduler:
         else:
             logger.error(f"DFMoco server process already terminated")
 
-    def start_backend(self):
+    def start_backend(self, config):
         logger.info("Starting backend process")
         if self.backend_proc is None:
             self.backend_proc = \
                 self.ctx.Process(target=run_backend, name="Backend",
-                                 args=(self.config, self.ur_in_q, self.df_in_q, self.ur_out_q, self.df_out_q),
+                                 args=(config, self.ur_in_q, self.df_in_q, self.ur_out_q, self.df_out_q),
                                  daemon=True)
             self.backend_proc.start()
             logger.info(f"Backend process started with PID {self.backend_proc.pid}")

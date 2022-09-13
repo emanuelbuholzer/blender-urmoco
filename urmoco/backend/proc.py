@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run(config, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_queue):
-    robot = RobotClient(config)
+    # A somewhat educated guess on what the initial state of the robot and the
+    # system could be. This initial state gets and needs to be updated during
+    # the first cycle.
+    state = get_initial_state()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
 
     # Try connecting to the robot until the robot is reachable
     robot.connect()
@@ -17,11 +22,6 @@ def run(config, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_q
         time.sleep(config.get('robot.connect_interval_seconds'))
         robot.connect()
     logger.info("Connected to the robot")
-
-    # A somewhat educated guess on what the initial state of the robot and the
-    # system could be. This initial state gets and needs to be updated during
-    # the first cycle.
-    state = get_initial_state()
 
     # The main loop controlling the robot. The loop is designed to be
     # non-blocking and to be run through cycles quickly, as only

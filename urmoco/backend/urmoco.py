@@ -1,50 +1,42 @@
-import time
 import logging
-from urmoco.backend.modes import apply_modes
-from urmoco.backend.state import get_initial_state
+
+import time
+
+from urmoco.backend.robot import RobotClient
 
 logger = logging.getLogger(__name__)
 
 
-def handle_urmoco_request(urmoco_req, state, robot, urmoco_out_queue, dfmoco_out_queue):
-    if urmoco_req["type"] == "hi":
-        state = get_initial_state()
-        robot_mode = robot.get_mode()
-        safety_mode = robot.get_safety_mode()
-        apply_modes(state, robot_mode, safety_mode, urmoco_out_queue)
-
-        robot.set_tool_center_point((0, 0, 0.1, 0, 0, 0))
-        robot.set_payload(state["payload"])
-        time.sleep(1)
-
+def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queue, dfmoco_out_queue):
     if urmoco_req["type"] == "power_off":
-        robot.power_off()
-
-    if urmoco_req["type"] == "power_on":
-        robot.close_popups()
-        time.sleep(0.5)
-        robot.power_on()
-        time.sleep(3)
-        robot.set_tool_center_point((0, 0, 0.1, 0, 0, 0))
-        robot.set_payload(state["payload"])
-        time.sleep(1)
-        robot.release_brakes()
-        time.sleep(2)
-        joints = robot.get_configuration()
         urmoco_out_queue.put({
-            "type": "sync",
-            "payload": {
-                "joints": joints
+            'type': 'info',
+            'payload': {
+                'status_text': 'Powering off'
             }
         })
-        time.sleep(2)
-        urmoco_out_queue.put({"type": "power_on"})
+        robot.power_off()
+        time.sleep(5)
+
+        urmoco_out_queue.put({
+            'type': 'info',
+            'payload': {
+                'status_text': 'Disconnecting'
+            }
+        })
+
+        robot.disconnect()
+        time.sleep(1)
+        state['terminated'] = True
+        urmoco_out_queue.put({
+            "type": "power_off"
+        })
 
     if urmoco_req["type"] == "unlock":
+        time.sleep(5)
         robot.unlock_protective_stop()
-        time.sleep(2)
-        robot.release_brakes()
         time.sleep(3)
+        robot.release_brakes()
         urmoco_out_queue.put({"type": "unlock"})
 
     if urmoco_req["type"] == "start_shooting":
@@ -63,6 +55,8 @@ def handle_urmoco_request(urmoco_req, state, robot, urmoco_out_queue, dfmoco_out
             state["move"]["target_joints"] = joints
             if not state["shooting"]:
                 state["frame"] = -1
+        else:
+            logger.debug("A move is already active. Ignoring.")
 
     if urmoco_req["type"] == "sync":
         joints = robot.get_configuration()

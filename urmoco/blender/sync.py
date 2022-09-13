@@ -17,6 +17,10 @@ def handle_reqs(req, context):
         bpy.ops.urmoco.messagebox('INVOKE_DEFAULT', message=req["payload"]["message"])
         return {'CANCELLED'}
 
+    if req["type"] == "info":
+        set_status_text(context, req['payload']['status_text'])
+        return
+
     elif req["type"] == "locked":
         set_mode(context, Mode.LOCKED)
         set_status_text(context, "An emergency stop occured")
@@ -27,18 +31,13 @@ def handle_reqs(req, context):
         set_status_text(context, "Robot powered off")
         return {'CANCELLED'}
 
-    elif req["type"] == "power_on":
-        set_mode(context, Mode.ON)
-        set_status_text(context, "Robot powered on")
-        return {'CANCELLED'}
-
     elif req["type"] == "disconnected":
         set_mode(context, Mode.DISCONNECTED)
         set_status_text(context, "Robot disconnected or not powered on")
         return {'CANCELLED'}
 
 
-def get_urmoco_sync(config, _urmoco_in_queue, urmoco_out_queue):
+def get_urmoco_sync(config, urmoco_out_queue):
     def sync():
         try:
             if not bpy.context.window_manager.urmoco_state.running_in_modal:

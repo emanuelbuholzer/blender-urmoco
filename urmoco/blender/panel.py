@@ -4,7 +4,7 @@ from urmoco.blender.state import get_mode, Mode, get_status_text
 
 
 class URMocoPanel(bpy.types.Panel):
-    bl_label = "Universal Robot Motion Control"
+    bl_label = "urmoco"
     bl_idname = "PANEL_PT_URMOCO"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -26,18 +26,13 @@ class URMocoPanel(bpy.types.Panel):
         row = self.layout.row()
 
         column_left = row.column()
-        if state in {Mode.OFF, Mode.DISCONNECTED}:
-            column_left.operator("urmoco.power_on")
-            column_left.enabled = state is not Mode.DISCONNECTED
-        else:
-            column_left.operator("urmoco.power_off")
-            column_left.enabled = state == Mode.ON
+        column_left.operator("urmoco.power_off")
 
         column_right = row.column()
         if state is Mode.LOCKED:
             column_right.operator("urmoco.unlock")
         else:
-            column_right.enabled = state in {Mode.AWAIT_RESPONSE, Mode.SHOOTING}
+            column_right.enabled = state in {Mode.MOVING, Mode.SHOOTING}
             column_right.operator("urmoco.emergency_stop")
 
         row = self.layout.row()
@@ -55,10 +50,16 @@ class URMocoPanel(bpy.types.Panel):
         row.operator("urmoco.transfer")
         row.operator("urmoco.sync")
 
-    def draw(self, context):
-        self.layout.label(icon='INFO', text=get_status_text(context))
+    def draw_preferences_confirmation(self, context):
+        self.layout.operator('urmoco.startup')
 
+    def draw(self, context):
         state = get_mode(context)
-        self.draw_shooting_section(state)
-        self.draw_robot_section(state)
-        self.draw_pose_section(state)
+        self.layout.label(icon='INFO', text=get_status_text(context))
+        if state is Mode.UNINITIALIZED:
+            self.draw_preferences_confirmation(context)
+            pass
+        else:
+            self.draw_shooting_section(state)
+            self.draw_robot_section(state)
+            self.draw_pose_section(state)
