@@ -39,12 +39,8 @@ if "bpy" in sys.modules:
     from xdg import XDG_CACHE_HOME
 
     # Setup logging over stdout and a rotating log file
-    logger = logging.getLogger(__name__)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    logger: logging.Logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
 
     def file_handler(filename):
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
