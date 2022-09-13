@@ -6,9 +6,14 @@ from urmoco.blender.constants import BONE_SHOULDER_PAN, BONE_SHOULDER_LIFT, BONE
 
 
 def apply_q(target_armature, q):
-
-    ik_enabled_prev = bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[CONSTRAINT_IK].enabled
+    ik_enabled_prev = bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[
+        CONSTRAINT_IK].enabled
     bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[CONSTRAINT_IK].enabled = False
+
+    prev_constraints_enabled = []
+    for constraint in bpy.data.objects[target_armature].pose.bones[BONE_IK_CONTROL].constraints:
+        prev_constraints_enabled.append(constraint.enabled)
+        constraint.enabled = False
 
     bpy.data.objects[target_armature].pose.bones[BONE_SHOULDER_PAN].rotation_euler[1] = q[0]
     bpy.data.objects[target_armature].pose.bones[BONE_SHOULDER_LIFT].rotation_euler[1] = q[1]
@@ -44,7 +49,12 @@ def apply_q(target_armature, q):
     bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_2].bone.select = wrist_joint_2_select_prev
     bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].bone.select = wrist_joint_3_select_prev
 
-    bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[CONSTRAINT_IK].enabled = ik_enabled_prev
+    bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[
+        CONSTRAINT_IK].enabled = ik_enabled_prev
+
+    for i, constraint in enumerate(bpy.data.objects[target_armature].pose.bones[BONE_IK_CONTROL].constraints):
+        constraint.enabled = prev_constraints_enabled[i]
+
 
 def get_q(target_armature):
     shoulder_pan_select_prev = bpy.data.objects[target_armature].pose.bones[BONE_SHOULDER_PAN].bone.select
