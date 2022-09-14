@@ -102,6 +102,15 @@ class RobotClient:
             self.set_payload(self.config.get("robot.payload"))
             time.sleep(1)
 
+            # Send the initial configuration to start correctly with the ghost
+            joints = self.get_configuration()
+            self.urmoco_out_queue.put({
+                "type": "sync",
+                "payload": {
+                    "joints": joints
+                }
+            })
+
             self.urmoco_out_queue.put({"type": "startup"})
 
             return True

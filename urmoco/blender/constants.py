@@ -1,4 +1,5 @@
 ARMATURE_MODEL = "Armature"
+ARMATURE_GHOST = "Ghost armature"
 
 BONE_SHOULDER_PAN = "Shoulder pan 0"
 BONE_SHOULDER_LIFT = "Shoulder lift 0"

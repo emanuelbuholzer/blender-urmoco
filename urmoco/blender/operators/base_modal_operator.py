@@ -3,7 +3,7 @@ import queue
 
 import bpy
 
-from urmoco.blender.constants import ARMATURE_MODEL
+from urmoco.blender.constants import ARMATURE_MODEL, ARMATURE_GHOST
 from urmoco.blender.rig import apply_q
 from urmoco.blender.sync import handle_reqs
 
@@ -28,7 +28,7 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
 
                     if request["type"] == "sync":
                         new_configuration = request["payload"]["joints"]
-                        apply_q(ARMATURE_MODEL, new_configuration)
+                        apply_q(ARMATURE_GHOST, new_configuration)
 
                     response = self.on_request(context, request)
                     if response is {'FINISHED'}:

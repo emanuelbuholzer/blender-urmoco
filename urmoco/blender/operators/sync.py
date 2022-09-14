@@ -1,5 +1,7 @@
 import logging
 
+from urmoco.blender.constants import ARMATURE_MODEL, ARMATURE_GHOST
+from urmoco.blender.rig import apply_q, get_q
 from urmoco.blender.state import Mode, get_mode, set_status_text
 from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
 
@@ -20,6 +22,8 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
 
         def on_request(self, context, request):
             if request["type"] == "sync":
+                new_configuration = get_q(ARMATURE_GHOST)
+                apply_q(ARMATURE_MODEL, new_configuration)
                 set_status_text(context, "Synced pose from physical robot")
                 return {'FINISHED'}
 
