@@ -42,13 +42,16 @@ class URMocoPanel(bpy.types.Panel):
             row.enabled = state is Mode.ON
             row.operator("urmoco.start_freedrive")
 
-    def draw_pose_section(self, state: Mode):
+    def draw_pose_section(self, context, state: Mode):
         self.layout.label(text="Pose:")
 
         row = self.layout.row()
         row.enabled = state is Mode.ON
         row.operator("urmoco.transfer")
         row.operator("urmoco.sync")
+
+        row = self.layout.row()
+        row.prop(context.window_manager.urmoco_state, "baked")
 
     def draw_preferences_confirmation(self, context):
         self.layout.operator('urmoco.startup')
@@ -62,4 +65,4 @@ class URMocoPanel(bpy.types.Panel):
         else:
             self.draw_shooting_section(state)
             self.draw_robot_section(state)
-            self.draw_pose_section(state)
+            self.draw_pose_section(context, state)

@@ -68,7 +68,9 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
         })
 
     if urmoco_req["type"] == "start_freedrive":
-        robot.start_freedrive()
+        feature = urmoco_req["payload"]["feature"]
+        free_axes = urmoco_req["payload"]["free_axes"]
+        robot.start_freedrive(free_axes, feature)
 
     if urmoco_req["type"] == "stop_freedrive":
         robot.stop_freedrive()

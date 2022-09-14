@@ -201,12 +201,13 @@ class RobotClient:
     def get_safety_mode(self):
         return self.rtde_r.getSafetyMode()
 
-    def start_freedrive(self):
-        if not self.rtde_c.teachMode():
+    def start_freedrive(self, free_axes, feature):
+        _free_axes = [1 if x else 0 for x in feature]
+        if not self.rtde_c.freedriveMode(free_axes=_free_axes, feature=feature):
             raise Exception("Could not enter freedrive mode")
 
     def stop_freedrive(self):
-        self.rtde_c.endTeachMode()
+        self.rtde_c.endFreedriveMode()
 
     def stop(self):
         speed = self.config.get('robot.joint_stop_speeed')

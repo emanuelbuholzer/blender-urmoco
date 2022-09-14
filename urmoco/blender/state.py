@@ -16,6 +16,8 @@ class URMocoState(bpy.types.PropertyGroup):
     mode: bpy.props.StringProperty(default=Mode.UNINITIALIZED.value, update=redraw_panel)
     running_in_modal: bpy.props.BoolProperty(default=False, update=redraw_panel)
 
+    baked: bpy.props.BoolProperty(name="Use baked poses", default=False, update=redraw_panel)
+
 
 def get_mode(context) -> Mode:
     return Mode(context.window_manager.urmoco_state.mode)

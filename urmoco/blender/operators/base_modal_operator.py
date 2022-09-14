@@ -63,6 +63,8 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
 
         def cancel(self, context):
             context.window_manager.urmoco_state.running_in_modal = False
-            context.window_manager.event_timer_remove(self._timer)
+            # _timer is None when an operated gets invoked with a props dialog and cancelled before execution
+            if self._timer is not None:
+                context.window_manager.event_timer_remove(self._timer)
 
     return SyncedModalOperator
