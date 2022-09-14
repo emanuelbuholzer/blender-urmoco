@@ -1,6 +1,14 @@
 ARMATURE_MODEL = "Armature"
 ARMATURE_GHOST = "Ghost armature"
 
+GEO_GHOST_ROOT = "Ghost root"
+GEO_GHOST_SHOULDER_PAN = "Ghost shoulder pan"
+GEO_GHOST_SHOULDER_LIFT = "Ghost shoulder lift"
+GEO_GHOST_ELBOW = "Ghost elbow"
+GEO_GHOST_WRIST_JOINT_1 = "Ghost wrist joint 1"
+GEO_GHOST_WRIST_JOINT_2 = "Ghost wrist joint 2"
+GEO_GHOST_WRIST_JOINT_3 = "Ghost wrist joint 3"
+
 BONE_SHOULDER_PAN = "Shoulder pan 0"
 BONE_SHOULDER_LIFT = "Shoulder lift 0"
 BONE_ELBOW = "Elbow 0"

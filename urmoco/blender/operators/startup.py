@@ -2,6 +2,7 @@ import bpy
 
 from urmoco import Config
 from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
+from urmoco.blender.rig import set_ghost_hidden
 from urmoco.blender.state import set_mode, set_status_text, get_mode
 from urmoco.mode import Mode
 
@@ -34,6 +35,7 @@ def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
             if request["type"] == "startup":
                 set_mode(context, Mode.ON)
                 set_status_text(context, "Started urmoco")
+                set_ghost_hidden(False)
                 return {'FINISHED'}
 
         def invoke(self, context, event):

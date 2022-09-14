@@ -2,8 +2,8 @@ import bpy
 from mathutils import Matrix
 
 from urmoco.blender.constants import BONE_SHOULDER_PAN, BONE_SHOULDER_LIFT, BONE_ELBOW, BONE_WRIST_JOINT_1, \
-    BONE_WRIST_JOINT_2, BONE_WRIST_JOINT_3, BONE_IK_CONTROL, CONSTRAINT_IK
-
+    BONE_WRIST_JOINT_2, BONE_WRIST_JOINT_3, BONE_IK_CONTROL, CONSTRAINT_IK, GEO_GHOST_ROOT, GEO_GHOST_SHOULDER_PAN, \
+    GEO_GHOST_SHOULDER_LIFT, GEO_GHOST_ELBOW, GEO_GHOST_WRIST_JOINT_1, GEO_GHOST_WRIST_JOINT_2, GEO_GHOST_WRIST_JOINT_3
 
 def apply_q(target_armature, q):
     ik_enabled_prev = bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].constraints[
@@ -90,3 +90,13 @@ def get_q(target_armature):
     bpy.data.objects[target_armature].pose.bones[BONE_WRIST_JOINT_3].bone.select = wrist_joint_3_select_prev
 
     return q
+
+
+def set_ghost_hidden(hidden):
+    bpy.data.objects[GEO_GHOST_ROOT].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_SHOULDER_PAN].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_SHOULDER_LIFT].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_ELBOW].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_WRIST_JOINT_1].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_WRIST_JOINT_2].hide_viewport = hidden
+    bpy.data.objects[GEO_GHOST_WRIST_JOINT_3].hide_viewport = hidden
