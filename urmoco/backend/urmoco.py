@@ -75,21 +75,4 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
 
     if urmoco_req["type"] == "stop":
         robot.stop()
-        state["frame"] = -1
-        state["move"]["active"] = False
-        state["move"]["target_joints"] = None
-        state["move"]["time_elapsed_seconds"] = 0
-        joints = robot.get_configuration()
-        urmoco_out_queue.put({
-            "type": "sync",
-            "payload": {
-                "joints": joints
-            }
-        })
-        urmoco_out_queue.put({"type": "stop"})
-        dfmoco_out_queue.put({
-            "type": "set_frame",
-            "payload": {
-                "current_frame": state["frame"]
-            }
-        })
+        state["move"]["stopping"] = True

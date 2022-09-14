@@ -9,6 +9,7 @@ initial_state = {
     'safety_mode': None,
     'move': {
         'active': False,
+        'stopping': False,
         'target_joints': None,
         'target_frame': None,
         'time_elapsed_seconds': 0.
