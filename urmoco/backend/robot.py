@@ -211,6 +211,8 @@ class RobotClient:
     def stop(self):
         speed = self.config.get('robot.joint_stop_speeed')
         self.rtde_c.stopJ(speed)
+        while not self.is_steady():
+            logger.debug("Robot not steady yet")
 
     def unlock_protective_stop(self):
         self.dashboard_client.unlockProtectiveStop()
