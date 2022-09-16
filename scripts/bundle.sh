@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
+rm -r dist
 mkdir -p dist
-rm dist/*
 
 echo "Bundling urmoco blender addon"
 TMP=$(mktemp -d)
