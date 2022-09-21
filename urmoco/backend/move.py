@@ -14,7 +14,6 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
             logger.debug("Robot not steady yet")
         else:
             logger.debug("Steady at target")
-
             state["move"]["active"] = False
             state["move"]["target_joints"] = None
             state["move"]["time_elapsed_seconds"] = 0
@@ -56,6 +55,7 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
     timeout_seconds = config.get('robot.move_timeout_seconds')
     if state["move"]["time_elapsed_seconds"] > timeout_seconds and not state["move"]["stopping"]:
         robot.stop()
+        state["move"]["stopping"] = True
         state["move"]["active"] = False
         state["move"]["target_joints"] = None
         state["move"]["time_elapsed_seconds"] = 0
