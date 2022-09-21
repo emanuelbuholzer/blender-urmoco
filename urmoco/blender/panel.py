@@ -10,31 +10,22 @@ class URMocoPanel(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "Motion Control"
 
-    def draw_shooting_section(self, state: Mode):
-        self.layout.label(text="Shooting:")
-
+    def draw_initialised(self, state: Mode):
+        self.layout.label(text="Capturing:")
         row = self.layout.row()
         if state is Mode.SHOOTING:
-            row.operator("urmoco.stop_shooting")
+            row.operator("urmoco.stop_capturing")
         else:
-            row.operator("urmoco.start_shooting")
+            row.operator("urmoco.start_capturing")
             row.enabled = state is Mode.ON
 
-    def draw_robot_section(self, state: Mode):
-        self.layout.label(text="Robot:")
-
+        self.layout.label(text="Movement:")
         row = self.layout.row()
+        row.scale_y = 2
+        row.enabled = state in {Mode.MOVING, Mode.SHOOTING}
+        row.operator("urmoco.emergency_stop")
 
-        column_left = row.column()
-        column_left.operator("urmoco.power_off")
-
-        column_right = row.column()
-        if state is Mode.LOCKED:
-            column_right.operator("urmoco.unlock")
-        else:
-            column_right.enabled = state in {Mode.MOVING, Mode.SHOOTING}
-            column_right.operator("urmoco.emergency_stop")
-
+        self.layout.label(text="Pose:")
         row = self.layout.row()
         if state is Mode.FREEDRIVE:
             row.operator("urmoco.stop_freedrive")
@@ -42,15 +33,16 @@ class URMocoPanel(bpy.types.Panel):
             row.enabled = state is Mode.ON
             row.operator("urmoco.start_freedrive")
 
-    def draw_pose_section(self, state: Mode):
-        self.layout.label(text="Pose:")
-
         row = self.layout.row()
         row.enabled = state is Mode.ON
         row.operator("urmoco.transfer")
         row.operator("urmoco.sync")
 
-    def draw_preferences_confirmation(self, context):
+        self.layout.label(text="Robot:")
+        row = self.layout.row()
+        row.operator("urmoco.power_off")
+
+    def draw_uninitialised(self, context):
         self.layout.operator('urmoco.startup')
 
     def draw(self, context):
@@ -63,9 +55,7 @@ class URMocoPanel(bpy.types.Panel):
         self.layout.label(icon='INFO', text=get_status_text(context))
 
         if state is Mode.UNINITIALIZED:
-            self.draw_preferences_confirmation(context)
+            self.draw_uninitialised(context)
             pass
         else:
-            self.draw_shooting_section(state)
-            self.draw_robot_section(state)
-            self.draw_pose_section(state)
+            self.draw_initialised(state)

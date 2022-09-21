@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 
 import time
 
@@ -39,20 +40,32 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
         robot.release_brakes()
         urmoco_out_queue.put({"type": "unlock"})
 
-    if urmoco_req["type"] == "start_shooting":
+    if urmoco_req["type"] == "start_capturing":
         state["shooting"] = True
         state["frame"] = -1
 
-    if urmoco_req["type"] == "stop_shooting":
+    if urmoco_req["type"] == "stop_capturing":
         state["shooting"] = False
         state["frame"] = -1
 
     if urmoco_req["type"] == "transfer":
         if not state["move"]["active"]:
-            joints = urmoco_req["payload"]["target_joints"]
-            robot.move_to_configuration(joints)
+            joints = np.rad2deg(list(urmoco_req["payload"]["target_joints"]))
+            current_joints = robot.get_configuration()
+            target_joints = []
+            for i, joint in enumerate(joints):
+                upper_mod = joint % 360
+                lower_mod = joint % -360
+                upper_dist = (current_joints[i] - upper_mod)**2
+                lower_dist = (current_joints[i] - lower_mod)**2
+                if upper_dist <= lower_dist:
+                    target_joints.append(np.deg2rad(upper_mod))
+                else:
+                    target_joints.append(np.deg2rad(lower_mod))
+
+            robot.move_to_configuration(target_joints)
             state["move"]["active"] = True
-            state["move"]["target_joints"] = joints
+            state["move"]["target_joints"] = target_joints
             if not state["shooting"]:
                 state["frame"] = -1
         else:

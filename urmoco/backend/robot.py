@@ -17,7 +17,6 @@ class RobotClient:
         self.rtde_r: rtde_receive.RTDEReceiveInterface = None
         self.rtde_c: rtde_control.RTDEControlInterface = None
         self.dashboard_client: dashboard_client.DashboardClient = None
-        self.gracefully_failed = False
 
     def connect(self):
         try:

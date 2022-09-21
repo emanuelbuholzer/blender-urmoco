@@ -10,7 +10,7 @@ def get_operators(config, scheduler):
     from .power_off import get_operators
     operators += get_operators(config, scheduler, urmoco_in_queue, urmoco_out_queue)
 
-    from .shooting import get_operators
+    from .capturing import get_operators
     operators += get_operators(config, urmoco_in_queue, urmoco_out_queue)
 
     from .stop import get_operators
