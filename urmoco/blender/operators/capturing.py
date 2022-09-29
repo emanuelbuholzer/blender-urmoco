@@ -42,7 +42,8 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
                 urmoco_in_queue.put({
                     "type": "transfer",
                     "payload": {
-                        "target_joints": configuration
+                        "target_joints": configuration,
+                        "target_frame": frame
                     }
                 })
                 set_status_text(context, f"Moving to frame {frame}")
