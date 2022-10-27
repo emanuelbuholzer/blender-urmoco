@@ -22,7 +22,7 @@ class URMocoPanel(bpy.types.Panel):
         self.layout.label(text="Movement:")
         row = self.layout.row()
         row.scale_y = 2
-        row.enabled = state in {Mode.MOVING, Mode.SHOOTING}
+        row.enabled = state in {Mode.MOVING}
         row.operator("urmoco.emergency_stop")
 
         self.layout.label(text="Pose:")

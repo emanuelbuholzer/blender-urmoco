@@ -44,6 +44,12 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
             })
             ur_out_q.put({"type": "stop"})
             df_out_q.put({
+                "type": "stop_motor"
+            })
+            df_out_q.put({
+                "type": "stop_all"
+            })
+            df_out_q.put({
                 "type": "set_frame",
                 "payload": {
                     "current_frame": state["frame"]

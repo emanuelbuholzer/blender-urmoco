@@ -43,10 +43,22 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
     if urmoco_req["type"] == "start_capturing":
         state["shooting"] = True
         state["frame"] = -1
+        dfmoco_out_queue.put({
+            "type": "set_frame",
+            "payload": {
+                "current_frame": state["frame"]
+            }
+        })
 
     if urmoco_req["type"] == "stop_capturing":
         state["shooting"] = False
         state["frame"] = -1
+        dfmoco_out_queue.put({
+            "type": "set_frame",
+            "payload": {
+                "current_frame": state["frame"]
+            }
+        })
 
     if urmoco_req["type"] == "transfer":
         if not state["move"]["active"]:
@@ -70,6 +82,12 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
                 state["move"]["target_frame"] = urmoco_req["payload"]["target_frame"]
             if not state["shooting"]:
                 state["frame"] = -1
+                dfmoco_out_queue.put({
+                    "type": "set_frame",
+                    "payload": {
+                        "current_frame": state["frame"]
+                    }
+                })
         else:
             logger.debug("A move is already active. Ignoring.")
 
@@ -84,10 +102,33 @@ def handle_urmoco_request(urmoco_req, state, robot: RobotClient, urmoco_out_queu
 
     if urmoco_req["type"] == "start_freedrive":
         robot.start_freedrive()
+        if not state["shooting"]:
+            state["frame"] = -1
+            dfmoco_out_queue.put({
+                "type": "set_frame",
+                "payload": {
+                    "current_frame": state["frame"]
+                }
+            })
 
     if urmoco_req["type"] == "stop_freedrive":
         robot.stop_freedrive()
+        if not state["shooting"]:
+            state["frame"] = -1
+            dfmoco_out_queue.put({
+                "type": "set_frame",
+                "payload": {
+                    "current_frame": state["frame"]
+                }
+            })
 
     if urmoco_req["type"] == "stop":
         robot.stop()
         state["move"]["stopping"] = True
+        state["frame"] = -1
+        dfmoco_out_queue.put({
+            "type": "set_frame",
+            "payload": {
+                "current_frame": state["frame"]
+            }
+        })

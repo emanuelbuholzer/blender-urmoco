@@ -41,7 +41,7 @@ def run_cycle(config, state, robot, urmoco_in_queue, dfmoco_in_queue, urmoco_out
     if state["shooting"]:
         try:
             dfmoco_req = dfmoco_in_queue.get_nowait()
-            handle_dfmoco_request(dfmoco_req, state, dfmoco_out_queue, urmoco_out_queue)
+            handle_dfmoco_request(dfmoco_req, state, robot, dfmoco_out_queue, urmoco_out_queue)
         except queue.Empty:
             # There was no dfmoco request, we continue
             pass
