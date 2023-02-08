@@ -7,28 +7,27 @@ from xdg import XDG_CONFIG_HOME
 logger = logging.getLogger(__name__)
 
 defaults = {
-    'dfmoco': {
-        'host': 'localhost',
-        'port': 25555,
-        'producer_interval_seconds': 1,
+    "dfmoco": {
+        "host": "localhost",
+        "port": 25555,
+        "producer_interval_seconds": 1,
     },
-    'robot': {
-        'host': '192.168.5.42',
-        'payload': 1,
-        'joint_move_speed': 0.5,
-        'joint_move_acceleration': 0.3,
-        'joint_stop_speeed': 2.0,
-        'freedrive_timeout_seconds': 86400,
-        'move_timeout_seconds': 120,
-        'target_distance_threshold': 0.001,
-        'connect_interval_seconds': 5,
-        'sync_interval_seconds': 0.01
+    "robot": {
+        "host": "192.168.5.42",
+        "payload": 1,
+        "joint_move_speed": 0.5,
+        "joint_move_acceleration": 0.3,
+        "joint_stop_speeed": 2.0,
+        "freedrive_timeout_seconds": 86400,
+        "move_timeout_seconds": 120,
+        "target_distance_threshold": 0.001,
+        "connect_interval_seconds": 5,
+        "sync_interval_seconds": 0.01,
     },
 }
 
 
 class Config:
-
     def __init__(self, config):
         base = defaults.copy()
         base.update(config)
@@ -50,12 +49,12 @@ class Config:
         # Resolve config path using XDG and alternatively $HOME/.config followed by urmoco/config.json
         base_path = Path(XDG_CONFIG_HOME)
         if not base_path:
-            base_path = Path.home().joinpath('.config')
-        config_path = base_path.joinpath('urmoco', 'config.json')
+            base_path = Path.home().joinpath(".config")
+        config_path = base_path.joinpath("urmoco", "config.json")
 
         # Parse the configuration and run the schedule
         try:
-            with open(config_path, 'r') as raw_config:
+            with open(config_path, "r") as raw_config:
                 self.config.update(json.load(raw_config))
         except FileNotFoundError:
             logging.debug("No configuration file found, ignoring.")

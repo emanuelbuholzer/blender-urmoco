@@ -1,17 +1,20 @@
 import logging
+
 import bpy
 
 from urmoco.blender.constants import ARMATURE_MODEL
+from urmoco.blender.operators.base_modal_operator import \
+    get_synced_modal_operator_class
 from urmoco.blender.rig import get_q
-from urmoco.blender.state import Mode, set_mode, set_status_text, get_mode
-from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
-
+from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 
 logger = logging.getLogger(__name__)
 
 
 def get_operators(config, urmoco_in_queue, urmoco_out_queue):
-    base_operator = get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue)
+    base_operator = get_synced_modal_operator_class(
+        config, urmoco_in_queue, urmoco_out_queue
+    )
 
     class StartCapturingOperator(base_operator):
         bl_idname = "urmoco.start_capturing"
@@ -39,13 +42,15 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
 
                 bpy.context.scene.frame_set(frame)
                 configuration = get_q(ARMATURE_MODEL)
-                urmoco_in_queue.put({
-                    "type": "transfer",
-                    "payload": {
-                        "target_joints": configuration,
-                        "target_frame": frame
+                urmoco_in_queue.put(
+                    {
+                        "type": "transfer",
+                        "payload": {
+                            "target_joints": configuration,
+                            "target_frame": frame,
+                        },
                     }
-                })
+                )
                 set_status_text(context, f"Moving to frame {frame}")
 
             if request["type"] == "move_success":
@@ -67,6 +72,6 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             context.window_manager.urmoco_state.running_in_modal = False
             set_mode(context, Mode.ON)
             set_status_text(context, "Stopped capturing")
-            return {'FINISHED'}
+            return {"FINISHED"}
 
     return [StartCapturingOperator, StopCapturingOperator]

@@ -1,8 +1,8 @@
 from unittest.mock import Mock
-from urmoco.config import Config
 
 from urmoco.backend.move import handle_move
 from urmoco.backend.state import get_initial_state
+from urmoco.config import Config
 
 
 def test_move_reaching_target():
@@ -26,7 +26,7 @@ def test_move_reaching_target():
     assert state["move"]["target_joints"] is None
     assert state["move"]["time_elapsed_seconds"] == 0
 
-    res = {'type': 'move_success', 'payload': {'frame': 12}}
+    res = {"type": "move_success", "payload": {"frame": 12}}
     ur_out_q.put.assert_called_once_with(res)
     df_out_q.put.assert_called_once_with(res)
 
@@ -45,7 +45,7 @@ def test_record_move_for_timeouts_before_reaching_target():
 
     # Act
     for duration in durations:
-        state['cycle']['prev_duration_seconds'] = duration
+        state["cycle"]["prev_duration_seconds"] = duration
         handle_move(config, state, robot, ur_out_q, df_out_q)
 
     # Assert
@@ -53,14 +53,12 @@ def test_record_move_for_timeouts_before_reaching_target():
     ur_out_q.put.assert_not_called()
     df_out_q.put.assert_not_called()
 
-    assert state['move']['time_elapsed_seconds'] == sum(durations)
+    assert state["move"]["time_elapsed_seconds"] == sum(durations)
 
 
 def test_move_timeout_will_stop():
     # Arrange
-    config = Config({
-        'robot': {'move_timeout_seconds': 5}
-    })
+    config = Config({"robot": {"move_timeout_seconds": 5}})
     state = get_initial_state()
     ur_out_q = Mock()
     df_out_q = Mock()
@@ -72,7 +70,7 @@ def test_move_timeout_will_stop():
 
     # Act
     for duration in durations:
-        state['cycle']['prev_duration_seconds'] = duration
+        state["cycle"]["prev_duration_seconds"] = duration
         handle_move(config, state, robot, ur_out_q, df_out_q)
 
     # Assert
@@ -82,8 +80,8 @@ def test_move_timeout_will_stop():
     assert state["move"]["target_joints"] is None
     assert state["move"]["time_elapsed_seconds"] == 0
 
-    ur_out_q.put.assert_called_once_with({'type': 'move_timeout'})
-    df_out_q.put.assert_called_once_with({'type': 'move_timeout'})
+    ur_out_q.put.assert_called_once_with({"type": "move_timeout"})
+    df_out_q.put.assert_called_once_with({"type": "move_timeout"})
 
 
 def test_move_reaching_target_not_steady_will_wait():

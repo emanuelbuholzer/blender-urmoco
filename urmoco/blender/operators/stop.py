@@ -1,13 +1,16 @@
 import logging
 
-from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
-from urmoco.blender.state import Mode, set_mode, set_status_text, get_mode
+from urmoco.blender.operators.base_modal_operator import \
+    get_synced_modal_operator_class
+from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 
 logger = logging.getLogger(__name__)
 
 
 def get_operators(config, urmoco_in_queue, urmoco_out_queue):
-    base_operator = get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue)
+    base_operator = get_synced_modal_operator_class(
+        config, urmoco_in_queue, urmoco_out_queue
+    )
 
     class StopOperator(base_operator):
         bl_idname = "urmoco.emergency_stop"
@@ -26,6 +29,6 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             if request["type"] == "stop":
                 set_mode(context, Mode.ON)
                 set_status_text(context, "Robot stopped")
-                return {'FINISHED'}
+                return {"FINISHED"}
 
     return [StopOperator]

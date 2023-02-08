@@ -1,9 +1,8 @@
-import logging
 import asyncio
+import logging
 import queue
 
-from . import consumer
-from . import producer
+from . import consumer, producer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -16,14 +15,14 @@ class DFMocoServer:
         self.out_queue = dfmoco_out_queue
 
     async def start(self):
-        host = self.config.get('dfmoco.host')
-        port = self.config.get('dfmoco.port')
+        host = self.config.get("dfmoco.host")
+        port = self.config.get("dfmoco.port")
         return await asyncio.start_server(self.handle_connection, host, port)
 
     async def handle_connection(self, reader, writer):
-        logger.info('Connected to Dragonframe')
+        logger.info("Connected to Dragonframe")
 
-        writer.write(bytes("hi 1 1 1.2.5\r\n", 'ascii'))
+        writer.write(bytes("hi 1 1 1.2.5\r\n", "ascii"))
         await writer.drain()
 
         # Clear queues
@@ -40,12 +39,16 @@ class DFMocoServer:
                 break
 
         state = {
-            'current_frame': -1,
-            'is_moving': False,
+            "current_frame": -1,
+            "is_moving": False,
         }
 
-        consumer_task = asyncio.create_task(consumer.run(self.config, self.in_queue, reader))
-        producer_task = asyncio.create_task(producer.run(self.config, state, self.out_queue, writer))
+        consumer_task = asyncio.create_task(
+            consumer.run(self.config, self.in_queue, reader)
+        )
+        producer_task = asyncio.create_task(
+            producer.run(self.config, state, self.out_queue, writer)
+        )
 
         e = await asyncio.gather(consumer_task, producer_task, return_exceptions=True)
-        logger.info(f'Disconnected from Dragonframe, an error occurred: {e}')
+        logger.info(f"Disconnected from Dragonframe, an error occurred: {e}")

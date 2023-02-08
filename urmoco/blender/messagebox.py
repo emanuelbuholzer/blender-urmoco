@@ -8,8 +8,8 @@ class MessageBox(bpy.types.Operator):
     message: bpy.props.StringProperty()
 
     def execute(self, context):
-        self.report({'INFO'}, self.message)
-        return {'FINISHED'}
+        self.report({"INFO"}, self.message)
+        return {"FINISHED"}
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self, width=400)

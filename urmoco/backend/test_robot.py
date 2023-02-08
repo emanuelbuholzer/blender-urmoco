@@ -1,4 +1,4 @@
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
 from urmoco.backend.robot import RobotClient
 
@@ -8,13 +8,13 @@ def test_connect(mocker):
     config = Mock()
     config.get = Mock(return_value="some_host")
 
-    dashboard_client_clazz: MagicMock = mocker.patch('dashboard_client.DashboardClient')
+    dashboard_client_clazz: MagicMock = mocker.patch("dashboard_client.DashboardClient")
     dashboard_client = dashboard_client_clazz.return_value
     dashboard_client.connect = Mock()
 
-    rtde_receive_clazz: MagicMock = mocker.patch('rtde_receive.RTDEReceiveInterface')
+    rtde_receive_clazz: MagicMock = mocker.patch("rtde_receive.RTDEReceiveInterface")
 
-    rtde_control_clazz: MagicMock = mocker.patch('rtde_control.RTDEControlInterface')
+    rtde_control_clazz: MagicMock = mocker.patch("rtde_control.RTDEControlInterface")
 
     state = Mock()
     urmoco_out_queue = Mock()
@@ -26,11 +26,11 @@ def test_connect(mocker):
     ret = robot.connect()
 
     # Assert
-    config.get.assert_called_once_with('robot.host')
-    dashboard_client_clazz.assert_called_once_with('some_host')
+    config.get.assert_called_once_with("robot.host")
+    dashboard_client_clazz.assert_called_once_with("some_host")
     dashboard_client.connect.assert_called_once()
-    rtde_receive_clazz.assert_called_once_with('some_host')
-    rtde_control_clazz.assert_called_once_with('some_host')
+    rtde_receive_clazz.assert_called_once_with("some_host")
+    rtde_control_clazz.assert_called_once_with("some_host")
     robot.disconnect.assert_not_called()
     assert ret is True
 
@@ -40,13 +40,13 @@ def test_connect_fails(mocker):
     config = Mock()
     config.get = Mock(return_value="some_host")
 
-    dashboard_client_clazz: MagicMock = mocker.patch('dashboard_client.DashboardClient')
+    dashboard_client_clazz: MagicMock = mocker.patch("dashboard_client.DashboardClient")
     dashboard_client = dashboard_client_clazz.return_value
     dashboard_client.connect = Mock()
 
-    rtde_receive_clazz: MagicMock = mocker.patch('rtde_receive.RTDEReceiveInterface')
+    rtde_receive_clazz: MagicMock = mocker.patch("rtde_receive.RTDEReceiveInterface")
 
-    rtde_control_clazz: MagicMock = mocker.patch('rtde_control.RTDEControlInterface')
+    rtde_control_clazz: MagicMock = mocker.patch("rtde_control.RTDEControlInterface")
     rtde_control_clazz.side_effect = Exception("some_error")
 
     state = Mock()
@@ -59,11 +59,11 @@ def test_connect_fails(mocker):
     ret = robot.connect()
 
     # Assert
-    config.get.assert_called_once_with('robot.host')
-    dashboard_client_clazz.assert_called_once_with('some_host')
+    config.get.assert_called_once_with("robot.host")
+    dashboard_client_clazz.assert_called_once_with("some_host")
     dashboard_client.connect.assert_called_once()
-    rtde_receive_clazz.assert_called_once_with('some_host')
-    rtde_control_clazz.assert_called_once_with('some_host')
+    rtde_receive_clazz.assert_called_once_with("some_host")
+    rtde_control_clazz.assert_called_once_with("some_host")
     robot.disconnect.assert_called_once()
     assert ret is False
 

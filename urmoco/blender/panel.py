@@ -1,6 +1,6 @@
 import bpy
 
-from urmoco.blender.state import get_mode, Mode, get_status_text
+from urmoco.blender.state import Mode, get_mode, get_status_text
 
 
 class URMocoPanel(bpy.types.Panel):
@@ -43,16 +43,16 @@ class URMocoPanel(bpy.types.Panel):
         row.operator("urmoco.power_off")
 
     def draw_uninitialised(self, context):
-        self.layout.operator('urmoco.startup')
+        self.layout.operator("urmoco.startup")
 
     def draw(self, context):
         state = get_mode(context)
 
-        if context.mode != 'POSE':
-            self.layout.label(icon='INFO', text="Please use urmoco in pose mode")
+        if context.mode != "POSE":
+            self.layout.label(icon="INFO", text="Please use urmoco in pose mode")
             return
 
-        self.layout.label(icon='INFO', text=get_status_text(context))
+        self.layout.label(icon="INFO", text=get_status_text(context))
 
         if state is Mode.UNINITIALIZED:
             self.draw_uninitialised(context)
