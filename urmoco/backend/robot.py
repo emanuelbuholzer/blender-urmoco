@@ -47,13 +47,14 @@ class RobotClient:
             if robot_mode != "Robotmode: POWER_OFF":
                 raise Exception(f"Robot in unknown mode. Cannot start urmoco.")
 
-            self.close_popups()
+            self.dashboard_client.closePopup()
+            self.dashboard_client.closeSafetyPopup()
             time.sleep(0.5)
 
             self.urmoco_out_queue.put(
                 {"type": "info", "payload": {"status_text": "Powering on"}}
             )
-            self.power_on()
+            self.dashboard_client.powerOn()
             time.sleep(5)
 
             # Sadly we can't release the brakes after we've set the payload.
@@ -62,7 +63,7 @@ class RobotClient:
             self.urmoco_out_queue.put(
                 {"type": "info", "payload": {"status_text": "Releasing brakes"}}
             )
-            self.release_brakes()
+            self.dashboard_client.brakeRelease()
             time.sleep(2)
 
             # Now let's setup the rtde interfaces. Let's hope our backend won't crash.
@@ -78,8 +79,10 @@ class RobotClient:
             self.urmoco_out_queue.put(
                 {"type": "info", "payload": {"status_text": "Configuring robot"}}
             )
-            self.set_tool_center_point((0, 0, 0.1, 0, 0, 0))
-            self.set_payload(self.config.get("robot.payload"))
+            self.rtde_c.setTcp([0, 0, 0.1, 0, 0, 0])
+            self.rtde_c.setPayload(
+                float(self.config.get("robot.payload")), [0.0, 0.0, 0.0]
+            )
             time.sleep(1)
 
             # Send the initial configuration to start correctly with the ghost
@@ -87,7 +90,6 @@ class RobotClient:
             self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
 
             self.urmoco_out_queue.put({"type": "startup"})
-
             return True
 
         except Exception as e:
@@ -149,12 +151,6 @@ class RobotClient:
             logger.debug("Reconnecting to the rtde control interface")
             self.rtde_r.reconnect()
 
-    def set_tool_center_point(self, tcp):
-        self.rtde_c.setTcp(list(tcp))
-
-    def set_payload(self, weight_kg):
-        self.rtde_c.setPayload(float(weight_kg), [0.0, 0.0, 0.0])
-
     def move_to_configuration(self, q):
         speed = self.config.get("robot.joint_move_speed")
         acceleration = self.config.get("robot.joint_move_acceleration")
@@ -190,19 +186,9 @@ class RobotClient:
     def unlock_protective_stop(self):
         self.dashboard_client.unlockProtectiveStop()
 
-    def release_brakes(self):
-        self.dashboard_client.brakeRelease()
-
-    def power_on(self):
-        self.dashboard_client.powerOn()
-
     def power_off(self):
         self.rtde_c.stopScript()
         self.dashboard_client.powerOff()
-
-    def close_popups(self):
-        self.dashboard_client.closePopup()
-        self.dashboard_client.closeSafetyPopup()
 
     def is_steady(self):
         return self.rtde_c.isSteady()
