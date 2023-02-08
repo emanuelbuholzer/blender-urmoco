@@ -16,7 +16,10 @@ def test_connect(mocker):
 
     rtde_control_clazz: MagicMock = mocker.patch('rtde_control.RTDEControlInterface')
 
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     robot.disconnect = Mock()
 
     # Act
@@ -46,7 +49,10 @@ def test_connect_fails(mocker):
     rtde_control_clazz: MagicMock = mocker.patch('rtde_control.RTDEControlInterface')
     rtde_control_clazz.side_effect = Exception("some_error")
 
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     robot.disconnect = Mock()
 
     # Act
@@ -65,7 +71,10 @@ def test_connect_fails(mocker):
 def test_is_connected():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     robot.dashboard_client = Mock()
     robot.dashboard_client.isConnected = Mock(return_value=True)
     robot.rtde_r = Mock()
@@ -86,7 +95,10 @@ def test_is_connected():
 def test_is_connected_but_it_is_not1():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     robot.dashboard_client = Mock()
     robot.dashboard_client.isConnected = Mock(return_value=True)
     robot.rtde_r = Mock()
@@ -107,7 +119,10 @@ def test_is_connected_but_it_is_not1():
 def test_is_connected_but_it_is_not2():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     robot.dashboard_client = Mock()
     robot.dashboard_client.isConnected = Mock(return_value=False)
     robot.rtde_r = Mock()
@@ -128,7 +143,10 @@ def test_is_connected_but_it_is_not2():
 def test_disconnect():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
     dashboard_client = Mock()
     robot.dashboard_client = dashboard_client
     robot.dashboard_client.disconnect = Mock()
@@ -154,7 +172,10 @@ def test_disconnect():
 def test_disconnect_noop():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
 
     # Act
     robot.disconnect()
@@ -168,7 +189,10 @@ def test_disconnect_noop():
 def test_reconnect():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
 
     robot.dashboard_client = Mock()
     robot.dashboard_client.isConnected = Mock(return_value=True)
@@ -195,7 +219,10 @@ def test_reconnect():
 def test_reconnect_with_actual_reconnects():
     # Arrange
     config = Mock()
-    robot = RobotClient(config)
+    state = Mock()
+    urmoco_out_queue = Mock()
+
+    robot = RobotClient(config, state, urmoco_out_queue)
 
     robot.dashboard_client = Mock()
     robot.dashboard_client.isConnected = Mock(return_value=False)
