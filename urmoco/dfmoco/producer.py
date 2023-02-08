@@ -1,53 +1,65 @@
 import asyncio
 import logging
 import queue
+from asyncio import StreamWriter
+from multiprocessing import Queue
+
+from urmoco.config import Config
+from urmoco.dfmoco.state import DFMocoState
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-async def stop_all(state, _response_payload, writer):
-    state["is_moving"] = False
-    response = f"sa\r\n"
-    writer.write(bytes(response, encoding="ascii"))
+async def stop_all(state: DFMocoState, _response_payload, writer: StreamWriter):
+    state.is_moving = False
+    state.current_frame = -1
+    writer.write(b"sa\r\n")
     await writer.drain()
 
 
-async def stop_motor(state, _response_payload, writer):
-    state["is_moving"] = False
-    response = "sm 1\r\n"
-    writer.write(bytes(response, encoding="ascii"))
+async def stop_motor(state: DFMocoState, _response_payload, writer: StreamWriter):
+    state.is_moving = False
+    state.current_frame = -1
+    writer.write(b"sm 1\r\n")
     await writer.drain()
 
 
-async def set_frame(state, response_payload, writer):
-    state["current_frame"] = response_payload["current_frame"]
-    heartbeat_message = f"mp {1} {state['current_frame']}\r\n"
-    writer.write(bytes(heartbeat_message, encoding="ascii"))
+async def set_frame(state: DFMocoState, response_payload, writer: StreamWriter):
+    state.current_frame = response_payload["current_frame"]
+    message = f"mp 1 {state.current_frame}\r\n"
+    writer.write(bytes(message, encoding="ascii"))
     await writer.drain()
 
 
-async def move_to_frame(state, response_payload, writer):
-    state["is_moving"] = True
+async def move_to_frame(state: DFMocoState, response_payload, writer: StreamWriter):
+    state.is_moving = True
+    state.current_frame = -1
     response = f'mm 1 {response_payload["target_frame"]}\r\n'
     writer.write(bytes(response, encoding="ascii"))
     await writer.drain()
 
 
-async def is_moving(state, response_payload, writer):
-    state["is_moving"] = response_payload["is_moving"]
+async def is_moving(state: DFMocoState, response_payload, writer: StreamWriter):
+    state.is_moving = response_payload["is_moving"]
+    if state.is_moving:
+        state.current_frame = -1
 
-    response = f'ms {1 if state["is_moving"] else 0}\r\n'
+    response = f"ms {1 if state.is_moving else 0}\r\n"
     writer.write(bytes(response, encoding="ascii"))
     await writer.drain()
 
 
-async def handle_move_timeout(state, _response_payload, writer):
+async def handle_move_timeout(
+    state: DFMocoState, _response_payload, writer: StreamWriter
+):
     await is_moving(state, {"is_moving": False}, writer)
     await set_frame(state, {"current_frame": -1}, writer)
 
 
-async def handle_move_success(state, response_payload, writer):
+async def handle_move_success(
+    state: DFMocoState, response_payload, writer: StreamWriter
+):
     await is_moving(state, {"is_moving": False}, writer)
     await set_frame(state, {"current_frame": response_payload["frame"]}, writer)
 
@@ -63,24 +75,34 @@ response_handlers = {
 }
 
 
-async def run(config, state, out_queue, writer):
-    while True:
-        try:
-            response = out_queue.get_nowait()
-            response_type = response["type"]
-            response_payload = response.get("payload", False) or {}
+async def run_cycle(
+    config: Config, state: DFMocoState, out_queue: Queue, writer: StreamWriter
+):
+    try:
+        response = out_queue.get_nowait()
+        response_type = response["type"]
+        response_payload = response.get("payload", False) or {}
 
-            handler = response_handlers.get(response_type)
-            if handler is None:
-                logger.error(
-                    "No handler for response type %s. Ignoring.", response_type
-                )
-                continue
+        handler = response_handlers.get(response_type)
+        if handler is None:
+            raise NotImplementedError("No handler for response type %s.", response_type)
 
-            await handler(state, response_payload, writer)
+        await handler(state, response_payload, writer)
 
-        except queue.Empty:
-            heartbeat_message = f"mp {1} {state['current_frame']}\r\n"
+    except queue.Empty:
+        if state.is_moving:
+            heartbeat_message = f"ms 1\r\n"
             writer.write(bytes(heartbeat_message, encoding="ascii"))
             await writer.drain()
-            await asyncio.sleep(config.get("dfmoco.producer_interval_seconds"))
+        else:
+            heartbeat_message = f"mp 1 {state.current_frame}\r\n"
+            writer.write(bytes(heartbeat_message, encoding="ascii"))
+            await writer.drain()
+        await asyncio.sleep(config.get("dfmoco.producer_interval_seconds"))
+
+
+async def run(
+    config: Config, state: DFMocoState, out_queue: Queue, writer: StreamWriter
+):
+    while True:
+        await run_cycle(config, state, out_queue, writer)

@@ -35,11 +35,11 @@ class DFMocoProcess:
             daemon=True,
         )
         self.dfmoco_proc.start()
-        time.sleep(1)
+        time.sleep(.1)
 
     def stop(self):
         self.dfmoco_proc.kill()
-        time.sleep(1)
+        time.sleep(.1)
 
 
 @pytest.fixture
@@ -88,7 +88,7 @@ class DFMocoClient:
         self.dfmoco_server.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(1)
 def test_receive_hi(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("hi\r\n")
@@ -96,7 +96,7 @@ def test_receive_hi(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(1)
 def test_receive_heartbeat(dfmoco_client):
     dfmoco_client.connect()
     assert dfmoco_client.readline_raw() == "hi 1 1 1.2.5\n"
@@ -104,7 +104,7 @@ def test_receive_heartbeat(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(2)
 def test_is_not_moving(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("ms\r\n")
@@ -115,7 +115,7 @@ def test_is_not_moving(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(2)
 def test_is_moving(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("ms\r\n")
@@ -127,7 +127,7 @@ def test_is_moving(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(2)
 def test_stop_motor(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("sm 1\r\n")
@@ -138,7 +138,7 @@ def test_stop_motor(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(2)
 def test_stop_all(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("sa\r\n")
@@ -149,7 +149,7 @@ def test_stop_all(dfmoco_client):
     dfmoco_client.stop()
 
 
-@pytest.mark.timeout(20)
+@pytest.mark.timeout(10)
 def test_move_to_frame(dfmoco_client):
     dfmoco_client.connect()
 
