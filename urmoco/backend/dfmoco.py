@@ -4,12 +4,9 @@ def handle_dfmoco_request(dfmoco_req, state, robot, dfmoco_out_queue, urmoco_out
         dfmoco_out_queue.put(dfmoco_req)
 
     if dfmoco_req["type"] == "is_moving":
-        dfmoco_out_queue.put({
-            "type": "is_moving",
-            "payload": {
-                "is_moving": state["move"]["active"]
-            }
-        })
+        dfmoco_out_queue.put(
+            {"type": "is_moving", "payload": {"is_moving": state["move"]["active"]}}
+        )
 
     if dfmoco_req["type"] in {"stop_motor", "stop_all"}:
         robot.stop()

@@ -14,12 +14,14 @@ async def stop_motor(_request_type, _request_args, in_queue):
 
 async def move_to_frame(_request_type, request_args, in_queue):
     target_frame = int(request_args[1])
-    in_queue.put({
-        "type": "move_to_frame",
-        "payload": {
-            "target_frame": target_frame,
+    in_queue.put(
+        {
+            "type": "move_to_frame",
+            "payload": {
+                "target_frame": target_frame,
+            },
         }
-    })
+    )
 
 
 async def get_motor_status(_request_type, _request_args, in_queue):
@@ -35,28 +37,28 @@ async def unsupported_operation(request_type, _request_args, _in_queue):
 
 
 request_handlers = {
-    b'hi': no_operation,
-    b'ms': get_motor_status,
-    b'mm': move_to_frame,
-    b'mp': no_operation,
-    b'sm': stop_motor,
-    b'sa': stop_all,
-    b'jm': unsupported_operation,
-    b'im': unsupported_operation,
-    b'pr': unsupported_operation,
-    b'zm': unsupported_operation,
-    b'np': unsupported_operation,
-    b'go': unsupported_operation,
+    b"hi": no_operation,
+    b"ms": get_motor_status,
+    b"mm": move_to_frame,
+    b"mp": no_operation,
+    b"sm": stop_motor,
+    b"sa": stop_all,
+    b"jm": unsupported_operation,
+    b"im": unsupported_operation,
+    b"pr": unsupported_operation,
+    b"zm": unsupported_operation,
+    b"np": unsupported_operation,
+    b"go": unsupported_operation,
 }
 
 
 async def run(_config, in_queue, reader):
     while True:
-        request = await reader.readuntil(separator=b'\r\n')
+        request = await reader.readuntil(separator=b"\r\n")
 
         request_type = request[0:2]
-        request_args = request[3:len(request) - 2].split(b' ')
-        logger.debug('Received message: %s', request)
+        request_args = request[3 : len(request) - 2].split(b" ")
+        logger.debug("Received message: %s", request)
 
         handler = request_handlers.get(request_type, False)
         if not handler:

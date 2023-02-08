@@ -31,21 +31,30 @@ def apply_modes(state, robot_mode, safety_mode, urmoco_out_queue):
     if robot_mode == ROBOT_MODE_IDLE or safety_mode == SAFETY_MODE_PROTECTIVE_STOPPED:
         urmoco_out_queue.put({"type": "locked"})
 
-    if robot_mode in {ROBOT_MODE_POWER_ON, ROBOT_MODE_RUNNING} and safety_mode == SAFETY_MODE_NORMAL_MODE:
+    if (
+        robot_mode in {ROBOT_MODE_POWER_ON, ROBOT_MODE_RUNNING}
+        and safety_mode == SAFETY_MODE_NORMAL_MODE
+    ):
         urmoco_out_queue.put({"type": "power_on"})
 
     if robot_mode == ROBOT_MODE_POWER_OFF and safety_mode == SAFETY_MODE_NORMAL_MODE:
         urmoco_out_queue.put({"type": "power_off"})
 
     # Second we check if the robot is in a locked state, which we cannot unlock.
-    if robot_mode not in {ROBOT_MODE_POWER_ON, ROBOT_MODE_POWER_OFF, ROBOT_MODE_RUNNING} and safety_mode != SAFETY_MODE_NORMAL_MODE:
-        urmoco_out_queue.put({
-            "type": "error",
-            "payload": {
-                "message": f"Robot cannot be controlled automatically. Robot is in mode {robot_mode} and safety "
-                           f"mode {safety_mode}. Please contact support and check the polyscope."
+    if (
+        robot_mode
+        not in {ROBOT_MODE_POWER_ON, ROBOT_MODE_POWER_OFF, ROBOT_MODE_RUNNING}
+        and safety_mode != SAFETY_MODE_NORMAL_MODE
+    ):
+        urmoco_out_queue.put(
+            {
+                "type": "error",
+                "payload": {
+                    "message": f"Robot cannot be controlled automatically. Robot is in mode {robot_mode} and safety "
+                    f"mode {safety_mode}. Please contact support and check the polyscope."
+                },
             }
-        })
+        )
 
     state["robot_mode"] = robot_mode
     logger.info(f"Robot mode changed to {robot_mode}")

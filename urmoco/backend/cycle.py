@@ -10,12 +10,20 @@ from urmoco.backend.urmoco import handle_urmoco_request
 logger = logging.getLogger(__name__)
 
 
-def run_cycle(config, state, robot, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_queue):
+def run_cycle(
+    config,
+    state,
+    robot,
+    urmoco_in_queue,
+    dfmoco_in_queue,
+    urmoco_out_queue,
+    dfmoco_out_queue,
+):
     # The duration of each cycle is measured in order to support long
     # operation that could potentially time out.
     cycle_start_time = time.time()
 
-    if state['terminated']:
+    if state["terminated"]:
         time.sleep(1)
         return
 
@@ -28,7 +36,9 @@ def run_cycle(config, state, robot, urmoco_in_queue, dfmoco_in_queue, urmoco_out
     # Handle incoming urmoco requests from blender
     try:
         urmoco_req = urmoco_in_queue.get_nowait()
-        handle_urmoco_request(urmoco_req, state, robot, urmoco_out_queue, dfmoco_out_queue)
+        handle_urmoco_request(
+            urmoco_req, state, robot, urmoco_out_queue, dfmoco_out_queue
+        )
     except queue.Empty:
         # There was no urmoco request, we continue
         pass
@@ -41,7 +51,9 @@ def run_cycle(config, state, robot, urmoco_in_queue, dfmoco_in_queue, urmoco_out
     if state["shooting"]:
         try:
             dfmoco_req = dfmoco_in_queue.get_nowait()
-            handle_dfmoco_request(dfmoco_req, state, robot, dfmoco_out_queue, urmoco_out_queue)
+            handle_dfmoco_request(
+                dfmoco_req, state, robot, dfmoco_out_queue, urmoco_out_queue
+            )
         except queue.Empty:
             # There was no dfmoco request, we continue
             pass

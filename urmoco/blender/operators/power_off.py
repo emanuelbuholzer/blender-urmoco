@@ -1,15 +1,19 @@
-import bpy
 import logging
 
-from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
+import bpy
+
+from urmoco.blender.operators.base_modal_operator import \
+    get_synced_modal_operator_class
 from urmoco.blender.rig import set_ghost_hidden
-from urmoco.blender.state import Mode, set_mode, set_status_text, get_mode
+from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 
 logger = logging.getLogger(__name__)
 
 
 def get_operators(config, scheduler, urmoco_in_queue, urmoco_out_queue):
-    base_operator = get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue)
+    base_operator = get_synced_modal_operator_class(
+        config, urmoco_in_queue, urmoco_out_queue
+    )
 
     class PowerOffOperator(base_operator):
         bl_idname = "urmoco.power_off"
@@ -31,6 +35,6 @@ def get_operators(config, scheduler, urmoco_in_queue, urmoco_out_queue):
                 set_ghost_hidden(True)
                 scheduler.terminate_backend()
                 scheduler.terminate_dfmoco_server()
-                return {'FINISHED'}
+                return {"FINISHED"}
 
     return [PowerOffOperator]
