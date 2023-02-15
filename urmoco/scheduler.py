@@ -27,7 +27,7 @@ class Scheduler:
             self.df_server_proc = self.ctx.Process(
                 target=run_df,
                 name="DFMoco server",
-                args=(config, self.df_in_q, self.df_out_q),
+                args=(self.df_in_q, self.df_out_q),
                 daemon=True,
             )
             self.df_server_proc.start()

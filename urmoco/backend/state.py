@@ -8,6 +8,7 @@ initial_state = {
     "robot_mode": None,
     "safety_mode": None,
     "move": {
+        "scheduled": False,
         "active": False,
         "stopping": False,
         "target_joints": None,

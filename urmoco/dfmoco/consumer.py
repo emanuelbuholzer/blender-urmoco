@@ -52,7 +52,7 @@ request_handlers = {
 }
 
 
-async def run(_config, in_queue, reader):
+async def run(in_queue, reader):
     while True:
         request = await reader.readuntil(separator=b"\r\n")
 

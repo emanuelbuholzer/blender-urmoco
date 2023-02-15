@@ -7,11 +7,6 @@ from xdg import XDG_CONFIG_HOME
 logger = logging.getLogger(__name__)
 
 defaults = {
-    "dfmoco": {
-        "host": "localhost",
-        "port": 25555,
-        "producer_interval_seconds": 1,
-    },
     "robot": {
         "host": "192.168.5.42",
         "payload": 1,

@@ -1,18 +1,11 @@
-import queue
 from asyncio import StreamWriter
 from multiprocessing import Queue
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
-from urmoco.config import Config
 from urmoco.dfmoco import producer
 from urmoco.dfmoco.state import DFMocoState
-
-
-@pytest.fixture
-def config() -> Config:
-    return Mock()
 
 
 @pytest.fixture
@@ -28,44 +21,14 @@ def writer() -> StreamWriter:
 
 
 @pytest.mark.asyncio
-async def test_send_motor_position_heartbeat(config, out_queue, writer):
+async def test_handle_unknown_message(out_queue, writer):
     # Arrange
-    state = DFMocoState(current_frame=42, is_moving=False)
-    config.get.return_value = 12
-    out_queue.get_nowait.side_effect = queue.Empty()
-
-    # Act
-    await producer.run_cycle(config, state, out_queue, writer)
-
-    # Assert
-    writer.write.assert_called_once_with(b"mp 1 42\r\n")
-    writer.drain.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_send_motor_status_heartbeat(config, out_queue, writer):
-    # Arrange
-    state = DFMocoState(current_frame=-1, is_moving=True)
-    config.get.return_value = 12
-    out_queue.get_nowait.side_effect = queue.Empty()
-
-    # Act
-    await producer.run_cycle(config, state, out_queue, writer)
-
-    # Assert
-    writer.write.assert_called_once_with(b"ms 1\r\n")
-    writer.drain.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_handle_unknown_message(config, out_queue, writer):
-    # Arrange
-    out_queue.get_nowait.return_value = {"type": "blablabla"}
+    out_queue.get_nowait.return_value = {"type": "test"}
 
     # Act & assert
     with pytest.raises(NotImplementedError):
         await producer.run(
-            config, {"is_moving": False, "current_frame": -1}, out_queue, writer
+            DFMocoState(is_moving=False, current_frame=-1), out_queue, writer
         )
 
 
@@ -141,7 +104,7 @@ async def test_is_moving_starting(writer):
     writer.write.assert_called_once_with(b"ms 1\r\n")
     writer.drain.assert_called_once()
     assert state.is_moving
-    assert state.current_frame == -1
+    assert state.current_frame == 12
 
 
 @pytest.mark.asyncio
@@ -183,7 +146,7 @@ async def test_handle_move_timeout(writer):
     await producer.handle_move_timeout(state, None, writer)
 
     # Assert
-    writer.write.assert_has_calls([call(b"ms 0\r\n"), call(b"mp 1 -1\r\n")])
+    writer.write.assert_has_calls([call(b"mp 1 -1\r\n"), call(b"ms 0\r\n")])
     writer.drain.assert_called()
     assert not state.is_moving
     assert state.current_frame == -1
@@ -198,7 +161,7 @@ async def test_handle_move_success(writer):
     await producer.handle_move_success(state, {"frame": 42}, writer)
 
     # Assert
-    writer.write.assert_has_calls([call(b"ms 0\r\n"), call(b"mp 1 42\r\n")])
+    writer.write.assert_has_calls([call(b"mp 1 42\r\n"), call(b"ms 0\r\n")])
     writer.drain.assert_called()
     assert not state.is_moving
     assert state.current_frame == 42

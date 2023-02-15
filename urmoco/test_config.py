@@ -11,8 +11,8 @@ def test_given_value():
 
 def test_hard_coded_value():
     config = Config({})
-    dfmoco_port = config.get("dfmoco.port")
-    assert dfmoco_port == 25555
+    robot_host = config.get("robot.host")
+    assert robot_host == "192.168.5.42"
 
 
 def test_array_without_string_name():

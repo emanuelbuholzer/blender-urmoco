@@ -4,7 +4,6 @@ import queue
 from asyncio import StreamWriter
 from multiprocessing import Queue
 
-from urmoco.config import Config
 from urmoco.dfmoco.state import DFMocoState
 
 logger = logging.getLogger(__name__)
@@ -42,8 +41,6 @@ async def move_to_frame(state: DFMocoState, response_payload, writer: StreamWrit
 
 async def is_moving(state: DFMocoState, response_payload, writer: StreamWriter):
     state.is_moving = response_payload["is_moving"]
-    if state.is_moving:
-        state.current_frame = -1
 
     response = f"ms {1 if state.is_moving else 0}\r\n"
     writer.write(bytes(response, encoding="ascii"))
@@ -53,15 +50,18 @@ async def is_moving(state: DFMocoState, response_payload, writer: StreamWriter):
 async def handle_move_timeout(
     state: DFMocoState, _response_payload, writer: StreamWriter
 ):
-    await is_moving(state, {"is_moving": False}, writer)
     await set_frame(state, {"current_frame": -1}, writer)
+    await is_moving(state, {"is_moving": False}, writer)
 
 
 async def handle_move_success(
     state: DFMocoState, response_payload, writer: StreamWriter
 ):
-    await is_moving(state, {"is_moving": False}, writer)
+    # It is important, that the current frame gets set and sent before we send Dragonframe the information,
+    # that we're no longer moving. Dragonframe can and will trigger another move once it receives the information,
+    # that we're no longer moving, even though we might have not arrived there or didn't even start!
     await set_frame(state, {"current_frame": response_payload["frame"]}, writer)
+    await is_moving(state, {"is_moving": False}, writer)
 
 
 response_handlers = {
@@ -75,9 +75,7 @@ response_handlers = {
 }
 
 
-async def run_cycle(
-    config: Config, state: DFMocoState, out_queue: Queue, writer: StreamWriter
-):
+async def run_cycle(state: DFMocoState, out_queue: Queue, writer: StreamWriter):
     try:
         response = out_queue.get_nowait()
         response_type = response["type"]
@@ -90,19 +88,10 @@ async def run_cycle(
         await handler(state, response_payload, writer)
 
     except queue.Empty:
-        if state.is_moving:
-            heartbeat_message = f"ms 1\r\n"
-            writer.write(bytes(heartbeat_message, encoding="ascii"))
-            await writer.drain()
-        else:
-            heartbeat_message = f"mp 1 {state.current_frame}\r\n"
-            writer.write(bytes(heartbeat_message, encoding="ascii"))
-            await writer.drain()
-        await asyncio.sleep(config.get("dfmoco.producer_interval_seconds"))
+        # Apparently heartbeats are not necessary, if you end up again here, then that was a lie x)
+        await asyncio.sleep(0.01)
 
 
-async def run(
-    config: Config, state: DFMocoState, out_queue: Queue, writer: StreamWriter
-):
+async def run(state: DFMocoState, out_queue: Queue, writer: StreamWriter):
     while True:
-        await run_cycle(config, state, out_queue, writer)
+        await run_cycle(state, out_queue, writer)

@@ -31,15 +31,15 @@ class DFMocoProcess:
         self.dfmoco_proc = mp_context.Process(
             target=run_dfmoco,
             name="DFMoco process",
-            args=(config, self.dfmoco_in_queue, self.dfmoco_out_queue),
+            args=(self.dfmoco_in_queue, self.dfmoco_out_queue),
             daemon=True,
         )
         self.dfmoco_proc.start()
-        time.sleep(.1)
+        time.sleep(0.1)
 
     def stop(self):
         self.dfmoco_proc.kill()
-        time.sleep(.1)
+        time.sleep(0.1)
 
 
 @pytest.fixture
@@ -53,6 +53,7 @@ class DFMocoClient:
         self.dfmoco_out_queue = dfmoco_server.dfmoco_out_queue
         self.dfmoco_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.dfmoco_server = dfmoco_server
+        self.f = self.dfmoco_socket.makefile()
 
     def connect(self):
         self.dfmoco_socket.connect(
@@ -62,20 +63,8 @@ class DFMocoClient:
     def send(self, message):
         self.dfmoco_socket.sendall(bytes(message, encoding="ascii"))
 
-    def readline(self, timeout_messages=5):
-        num_iterations = 0
-        while True:
-            line = self.dfmoco_socket.makefile().readline()
-            if num_iterations >= timeout_messages:
-                raise Exception("Timeout waiting for response")
-            elif line.startswith("hi") or line.startswith("mp"):
-                num_iterations += 1
-                continue
-            else:
-                return line
-
-    def readline_raw(self):
-        return self.dfmoco_socket.makefile().readline()
+    def readline(self):
+        return self.f.readline()
 
     def trigger_event(self, event):
         self.dfmoco_out_queue.put(event)
@@ -92,21 +81,24 @@ class DFMocoClient:
 def test_receive_hi(dfmoco_client):
     dfmoco_client.connect()
     dfmoco_client.send("hi\r\n")
-    assert dfmoco_client.readline_raw() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
     dfmoco_client.stop()
 
 
 @pytest.mark.timeout(1)
 def test_receive_heartbeat(dfmoco_client):
     dfmoco_client.connect()
-    assert dfmoco_client.readline_raw() == "hi 1 1 1.2.5\n"
-    assert dfmoco_client.readline_raw() == "mp 1 -1\n"
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
     dfmoco_client.stop()
 
 
 @pytest.mark.timeout(2)
 def test_is_not_moving(dfmoco_client):
     dfmoco_client.connect()
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
+
     dfmoco_client.send("ms\r\n")
     dfmoco_client.expect_event({"type": "is_moving"})
 
@@ -118,6 +110,10 @@ def test_is_not_moving(dfmoco_client):
 @pytest.mark.timeout(2)
 def test_is_moving(dfmoco_client):
     dfmoco_client.connect()
+
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
+
     dfmoco_client.send("ms\r\n")
     dfmoco_client.expect_event({"type": "is_moving"})
 
@@ -130,6 +126,10 @@ def test_is_moving(dfmoco_client):
 @pytest.mark.timeout(2)
 def test_stop_motor(dfmoco_client):
     dfmoco_client.connect()
+
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
+
     dfmoco_client.send("sm 1\r\n")
     dfmoco_client.expect_event({"type": "stop_motor"})
 
@@ -141,6 +141,10 @@ def test_stop_motor(dfmoco_client):
 @pytest.mark.timeout(2)
 def test_stop_all(dfmoco_client):
     dfmoco_client.connect()
+
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
+
     dfmoco_client.send("sa\r\n")
     dfmoco_client.expect_event({"type": "stop_all"})
 
@@ -152,6 +156,9 @@ def test_stop_all(dfmoco_client):
 @pytest.mark.timeout(10)
 def test_move_to_frame(dfmoco_client):
     dfmoco_client.connect()
+
+    assert dfmoco_client.readline() == "hi 1 1 1.2.5\n"
+    assert dfmoco_client.readline() == "mp 1 -1\n"
 
     dfmoco_client.send("mm 1 15\r\n")
     dfmoco_client.expect_event(
@@ -171,15 +178,6 @@ def test_move_to_frame(dfmoco_client):
     assert dfmoco_client.readline() == "ms 1\n"
 
     dfmoco_client.trigger_event({"type": "set_frame", "payload": {"current_frame": 15}})
-
-    sample = 0
-    num_observations = 0
-    while sample < 5:
-        sample += 1
-        line = dfmoco_client.readline_raw()
-        print(line)
-        if line == "mp 1 15\n":
-            num_observations += 1
-    assert num_observations > 0
+    assert dfmoco_client.readline() == "mp 1 15\n"
 
     dfmoco_client.stop()
