@@ -1,12 +1,13 @@
 import asyncio
 import logging
+from multiprocessing import Queue
 
 from .server import create_dfmoco_server
 
 logger = logging.getLogger(__name__)
 
 
-async def run_dfmoco_server(dfmoco_in_queue, dfmoco_out_queue):
+async def run_dfmoco_server(dfmoco_in_queue: Queue, dfmoco_out_queue: Queue):
     dfmoco_server = await create_dfmoco_server(dfmoco_in_queue, dfmoco_out_queue)
 
     addr = dfmoco_server.sockets[0].getsockname()

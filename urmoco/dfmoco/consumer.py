@@ -1,18 +1,20 @@
 import logging
+from asyncio import StreamReader
+from multiprocessing import Queue
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-async def stop_all(_request_type, _request_args, in_queue):
+async def stop_all(_request_type: bytes, _request_args: [bytes], in_queue: Queue):
     in_queue.put({"type": "stop_all"})
 
 
-async def stop_motor(_request_type, _request_args, in_queue):
+async def stop_motor(_request_type: bytes, _request_args: [bytes], in_queue: Queue):
     in_queue.put({"type": "stop_motor"})
 
 
-async def move_to_frame(_request_type, request_args, in_queue):
+async def move_to_frame(_request_type: bytes, request_args: [bytes], in_queue: Queue):
     target_frame = int(request_args[1])
     in_queue.put(
         {
@@ -24,15 +26,19 @@ async def move_to_frame(_request_type, request_args, in_queue):
     )
 
 
-async def get_motor_status(_request_type, _request_args, in_queue):
+async def get_motor_status(
+    _request_type: bytes, _request_args: [bytes], in_queue: Queue
+):
     in_queue.put({"type": "is_moving"})
 
 
-async def no_operation(request_type, _request_args, _in_queue):
+async def no_operation(request_type: bytes, _request_args: [bytes], _in_queue: Queue):
     logger.debug(f"Ignoring operation for request type {request_type}")
 
 
-async def unsupported_operation(request_type, _request_args, _in_queue):
+async def unsupported_operation(
+    request_type: bytes, _request_args: [bytes], _in_queue: Queue
+):
     logger.error(f"Unsupported operation {request_type} requested. Ignoring.")
 
 
@@ -52,12 +58,12 @@ request_handlers = {
 }
 
 
-async def run(in_queue, reader):
+async def run(in_queue: Queue, reader: StreamReader):
     while True:
-        request = await reader.readuntil(separator=b"\r\n")
+        request: bytes = await reader.readuntil(separator=b"\r\n")
 
-        request_type = request[0:2]
-        request_args = request[3 : len(request) - 2].split(b" ")
+        request_type: bytes = request[0:2]
+        request_args: [bytes] = request[3 : len(request) - 2].split(b" ")
         logger.debug("Received message: %s", request)
 
         handler = request_handlers.get(request_type, False)
