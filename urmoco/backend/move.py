@@ -14,6 +14,8 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
             logger.debug("Robot not steady yet")
         else:
             logger.debug("Steady at target")
+            state["move"]["stopping"] = False
+            state["move"]["scheduled"] = False
             state["move"]["active"] = False
             state["move"]["target_joints"] = None
             state["move"]["time_elapsed_seconds"] = 0
@@ -30,6 +32,7 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
         else:
             state["frame"] = -1
             state["move"]["stopping"] = False
+            state["move"]["scheduled"] = False
             state["move"]["active"] = False
             state["move"]["target_joints"] = None
             state["move"]["time_elapsed_seconds"] = 0

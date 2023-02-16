@@ -68,6 +68,12 @@ def handle_urmoco_request(
             state["move"]["target_joints"] = target_joints
             if "target_frame" in urmoco_req["payload"].keys():
                 state["move"]["target_frame"] = urmoco_req["payload"]["target_frame"]
+                dfmoco_out_queue.put(
+                    {
+                        "type": "move_to_frame",
+                        "payload": {"target_frame": state["move"]["target_frame"]},
+                    }
+                )
             if not state["shooting"]:
                 state["frame"] = -1
                 dfmoco_out_queue.put(
