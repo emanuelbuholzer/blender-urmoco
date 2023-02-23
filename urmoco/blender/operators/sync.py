@@ -1,5 +1,7 @@
 import logging
 
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
 from urmoco.blender.constants import (ARMATURE_GHOST, ARMATURE_MODEL,
                                       BONE_IK_CONTROL)
 from urmoco.blender.operators.base_modal_operator import \
@@ -10,9 +12,9 @@ from urmoco.blender.state import Mode, get_mode, set_status_text
 logger = logging.getLogger(__name__)
 
 
-def get_operators(config, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class SyncPoseOperator(base_operator):

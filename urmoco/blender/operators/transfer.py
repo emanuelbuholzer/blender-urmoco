@@ -1,5 +1,7 @@
 import logging
 
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
 from urmoco.blender.constants import ARMATURE_MODEL
 from urmoco.blender.operators.base_modal_operator import \
     get_synced_modal_operator_class
@@ -9,9 +11,9 @@ from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 logger = logging.getLogger(__name__)
 
 
-def get_operators(config, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class TransferPoseOperator(base_operator):
@@ -25,7 +27,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
         def on_execute(self, context):
             configuration = get_q(ARMATURE_MODEL)
 
-            urmoco_in_queue.put(
+            scheduler.ur_in_q.put(
                 {"type": "transfer", "payload": {"target_joints": configuration}}
             )
             set_mode(context, Mode.MOVING)

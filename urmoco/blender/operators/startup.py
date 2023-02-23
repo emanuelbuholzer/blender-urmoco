@@ -1,6 +1,8 @@
 import bpy
 
-from urmoco import Config
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
+from urmoco.blender.sync import get_urmoco_sync
 from urmoco.blender.operators.base_modal_operator import \
     get_synced_modal_operator_class
 from urmoco.blender.rig import set_ghost_hidden
@@ -8,9 +10,9 @@ from urmoco.blender.state import get_mode, set_mode, set_status_text
 from urmoco.mode import Mode
 
 
-def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class PreferencesConfirmationOperator(base_operator):
@@ -30,6 +32,9 @@ def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
             config.config["robot"][
                 "payload"
             ] = context.window_manager.urmoco_preferences.payload
+
+            sync = get_urmoco_sync(config, scheduler)
+            bpy.app.timers.register(sync)
 
             scheduler.start_dfmoco_server(config)
             scheduler.start_backend(config)

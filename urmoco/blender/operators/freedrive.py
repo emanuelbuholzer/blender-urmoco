@@ -2,6 +2,8 @@ import logging
 
 import bpy
 
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
 from urmoco.blender.operators.base_modal_operator import \
     get_synced_modal_operator_class
 from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
@@ -9,9 +11,9 @@ from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 logger = logging.getLogger(__name__)
 
 
-def get_operators(config, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class StartFreedriveOperator(base_operator):
@@ -23,7 +25,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             return get_mode(context) is Mode.ON
 
         def on_execute(self, context):
-            urmoco_in_queue.put({"type": "start_freedrive"})
+            scheduler.ur_in_q.put({"type": "start_freedrive"})
             set_mode(context, Mode.FREEDRIVE)
             set_status_text(context, "Freedrive started")
 
@@ -36,7 +38,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             return get_mode(context) is Mode.FREEDRIVE
 
         def execute(self, context):
-            urmoco_in_queue.put({"type": "stop_freedrive"})
+            scheduler.ur_in_q.put({"type": "stop_freedrive"})
             context.window_manager.urmoco_state.running_in_modal = False
             set_mode(context, Mode.ON)
             set_status_text(context, "Freedrive stopped")

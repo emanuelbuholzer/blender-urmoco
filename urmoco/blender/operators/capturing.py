@@ -2,6 +2,8 @@ import logging
 
 import bpy
 
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
 from urmoco.blender.constants import ARMATURE_MODEL
 from urmoco.blender.operators.base_modal_operator import \
     get_synced_modal_operator_class
@@ -11,9 +13,9 @@ from urmoco.blender.state import Mode, get_mode, set_mode, set_status_text
 logger = logging.getLogger(__name__)
 
 
-def get_operators(config, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class StartCapturingOperator(base_operator):
@@ -27,7 +29,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
         _last_frame = None
 
         def on_execute(self, context):
-            urmoco_in_queue.put({"type": "start_capturing"})
+            scheduler.ur_in_q.put({"type": "start_capturing"})
             set_mode(context, Mode.SHOOTING)
             set_status_text(context, "Started capturing")
 
@@ -42,7 +44,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
 
                 bpy.context.scene.frame_set(frame)
                 configuration = get_q(ARMATURE_MODEL)
-                urmoco_in_queue.put(
+                scheduler.ur_in_q.put(
                     {
                         "type": "transfer",
                         "payload": {
@@ -68,7 +70,7 @@ def get_operators(config, urmoco_in_queue, urmoco_out_queue):
             return get_mode(context) is Mode.SHOOTING
 
         def execute(self, context):
-            urmoco_in_queue.put({"type": "stop_capturing"})
+            scheduler.ur_in_q.put({"type": "stop_capturing"})
             context.window_manager.urmoco_state.running_in_modal = False
             set_mode(context, Mode.ON)
             set_status_text(context, "Stopped capturing")

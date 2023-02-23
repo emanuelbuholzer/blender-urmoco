@@ -39,7 +39,6 @@ if "bpy" in sys.modules:
     from .blender.preferences import (Preferences,
                                       get_preferences_property_group)
     from .blender.state import URMocoState
-    from .blender.sync import get_urmoco_sync
     from .config import Config
     from .dfmoco.proc import run as run_dfmoco
 
@@ -68,7 +67,6 @@ if "bpy" in sys.modules:
 
     # Load bpy types which are dependent on queues or configs
     operators = get_operators(config, scheduler)
-    sync = get_urmoco_sync(config, scheduler.ur_out_q)
     URMocoPreferences = get_preferences_property_group(config)
 
     def register():
@@ -91,7 +89,6 @@ if "bpy" in sys.modules:
 
         bpy.utils.register_class(URMocoPanel)
 
-        bpy.app.timers.register(sync, persistent=True)
 
     def unregister():
         # Unregister bpy classes

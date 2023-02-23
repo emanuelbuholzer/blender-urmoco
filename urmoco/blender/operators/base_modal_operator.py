@@ -3,14 +3,16 @@ import queue
 
 import bpy
 
-from urmoco.blender.constants import ARMATURE_GHOST, ARMATURE_MODEL
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
+from urmoco.blender.constants import ARMATURE_GHOST
 from urmoco.blender.rig import apply_q
 from urmoco.blender.sync import handle_reqs
 
 logger = logging.getLogger(__name__)
 
 
-def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
+def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
     class SyncedModalOperator(bpy.types.Operator):
         _timer = None
 
@@ -23,8 +25,10 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
                 return {"CANCELLED"}
 
             if event.type.startswith("TIMER"):
+                logger.error(f"ha {scheduler.ur_in_q.qsize()}")
+                logger.error(scheduler.ur_out_q.qsize())
                 try:
-                    request = urmoco_out_queue.get_nowait()
+                    request = scheduler.ur_out_q.get_nowait()
 
                     if request["type"] == "sync":
                         new_configuration = request["payload"]["joints"]
@@ -34,12 +38,13 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
                     if response is {"FINISHED"}:
                         return {"CANCELLED"}
                     elif response is not None:
-                        return response
-                    elif handle_reqs(request, context):
+                        return {"CANCELLED"}
+                        #return response
+                    elif handle_reqs(request, scheduler):
                         return {"CANCELLED"}
 
                     # While we're in the modal context we want to continue syncing
-                    urmoco_in_queue.put({"type": "sync"})
+                    scheduler.ur_in_q.put({"type": "sync"})
 
                 except queue.Empty:
                     pass
@@ -59,7 +64,7 @@ def get_synced_modal_operator_class(config, urmoco_in_queue, urmoco_out_queue):
             context.window_manager.modal_handler_add(self)
 
             # Trigger the initial sync
-            urmoco_in_queue.put({"type": "sync"})
+            scheduler.ur_in_q.put({"type": "sync"})
             return {"RUNNING_MODAL"}
 
         def cancel(self, context):
