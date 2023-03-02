@@ -23,7 +23,7 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.ON and not has_constraints(
+            return get_mode() is Mode.ON and not has_constraints(
                 ARMATURE_MODEL, BONE_IK_CONTROL
             )
 
@@ -31,7 +31,7 @@ def get_operators(config: Config, scheduler: Scheduler):
             if request["type"] == "sync":
                 new_configuration = get_q(ARMATURE_GHOST)
                 apply_q(ARMATURE_MODEL, new_configuration)
-                set_status_text(context, "Synced pose from physical robot")
+                set_status_text("Synced pose from physical robot")
                 return {"FINISHED"}
 
     return [SyncPoseOperator]

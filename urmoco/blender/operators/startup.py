@@ -21,7 +21,7 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.UNINITIALIZED
+            return get_mode() is Mode.UNINITIALIZED
 
         def on_execute(self, context):
             self.report({"INFO"}, "Starting urmoco")
@@ -41,12 +41,12 @@ def get_operators(config: Config, scheduler: Scheduler):
 
             scheduler.ur_in_q.put({"type": "hi"})
 
-            set_mode(context, Mode.AWAIT_RESPONSE)
+            set_mode(Mode.AWAIT_RESPONSE)
 
         def on_request(self, context, request):
             if request["type"] == "startup":
-                set_mode(context, Mode.ON)
-                set_status_text(context, "Started urmoco")
+                set_mode(Mode.ON)
+                set_status_text("Started urmoco")
                 set_ghost_hidden(False)
                 return {"FINISHED"}
 

@@ -7,7 +7,7 @@ from urmoco.scheduler import Scheduler
 from urmoco.config import Config
 from urmoco.blender.constants import ARMATURE_GHOST
 from urmoco.blender.rig import apply_q
-from urmoco.blender.sync import handle_reqs
+from urmoco.blender.handlers import handle_reqs
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +25,6 @@ def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
                 return {"CANCELLED"}
 
             if event.type.startswith("TIMER"):
-                logger.error(f"ha {scheduler.ur_in_q.qsize()}")
-                logger.error(scheduler.ur_out_q.qsize())
                 try:
                     request = scheduler.ur_out_q.get_nowait()
 
@@ -39,7 +37,6 @@ def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
                         return {"CANCELLED"}
                     elif response is not None:
                         return {"CANCELLED"}
-                        #return response
                     elif handle_reqs(request, scheduler):
                         return {"CANCELLED"}
 

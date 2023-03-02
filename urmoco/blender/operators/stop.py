@@ -20,11 +20,11 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is not Mode.OFF
+            return get_mode() is not Mode.OFF
 
         def on_execute(self, context):
             scheduler.ur_in_q.put({"type": "stop"})
-            set_mode(context, Mode.AWAIT_RESPONSE)
-            set_status_text(context, "Stopping")
+            set_mode(Mode.AWAIT_RESPONSE)
+            set_status_text("Stopping")
 
     return [StopOperator]

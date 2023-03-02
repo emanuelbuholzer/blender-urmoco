@@ -19,17 +19,21 @@ class URMocoState(bpy.types.PropertyGroup):
     running_in_modal: bpy.props.BoolProperty(default=False, update=redraw_panel)
 
 
-def get_mode(context) -> Mode:
-    return Mode(context.window_manager.urmoco_state.mode)
+def get_mode() -> Mode:
+    return Mode(bpy.context.window_manager.urmoco_state.mode)
 
 
-def set_mode(context, new_mode: Mode):
-    context.window_manager.urmoco_state.mode = new_mode.value
+def set_mode(new_mode: Mode):
+    bpy.context.window_manager.urmoco_state.mode = new_mode.value
 
 
-def get_status_text(context) -> str:
-    return context.window_manager.urmoco_state.status
+def get_status_text() -> str:
+    return bpy.context.window_manager.urmoco_state.status
 
 
-def set_status_text(context, status_text: str):
-    context.window_manager.urmoco_state.status = status_text
+def set_status_text(status_text: str):
+    bpy.context.window_manager.urmoco_state.status = status_text
+
+
+def get_running_in_modal() -> bool:
+    return bpy.context.window_manager.urmoco_state.running_in_modal

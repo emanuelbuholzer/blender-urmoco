@@ -22,7 +22,7 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.ON
+            return get_mode() is Mode.ON
 
         def on_execute(self, context):
             configuration = get_q(ARMATURE_MODEL)
@@ -30,23 +30,23 @@ def get_operators(config: Config, scheduler: Scheduler):
             scheduler.ur_in_q.put(
                 {"type": "transfer", "payload": {"target_joints": configuration}}
             )
-            set_mode(context, Mode.MOVING)
-            set_status_text(context, "Moving to target")
+            set_mode(Mode.MOVING)
+            set_status_text("Moving to target")
 
         def on_request(self, context, request):
             if request["type"] == "stop":
-                set_mode(context, Mode.ON)
-                set_status_text(context, "Stopped before target")
+                set_mode(Mode.ON)
+                set_status_text("Stopped before target")
                 return {"CANCELLED"}
 
             if request["type"] == "move_success":
-                set_mode(context, Mode.ON)
-                set_status_text(context, "Stopped at target")
+                set_mode(Mode.ON)
+                set_status_text("Stopped at target")
                 return {"FINISHED"}
 
             if request["type"] == "move_timeout":
-                set_mode(context, Mode.ON)
-                set_status_text(context, f"Move timed out (not at target)")
+                set_mode(Mode.ON)
+                set_status_text(f"Move timed out (not at target)")
                 return {"CANCELLED"}
 
     return [TransferPoseOperator]

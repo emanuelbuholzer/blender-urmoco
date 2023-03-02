@@ -23,11 +23,11 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) in {Mode.ON, Mode.LOCKED}
+            return get_mode() in {Mode.ON, Mode.LOCKED}
 
         def on_execute(self, context):
             scheduler.ur_in_q.put({"type": "power_off"})
-            set_mode(context, Mode.AWAIT_RESPONSE)
-            set_status_text(context, "Powering off")
+            set_mode(Mode.AWAIT_RESPONSE)
+            set_status_text("Powering off")
 
     return [PowerOffOperator]

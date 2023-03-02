@@ -46,13 +46,13 @@ class URMocoPanel(bpy.types.Panel):
         self.layout.operator("urmoco.startup")
 
     def draw(self, context):
-        state = get_mode(context)
+        state = get_mode()
 
         if context.mode != "POSE":
             self.layout.label(icon="INFO", text="Please use urmoco in pose mode")
             return
 
-        self.layout.label(icon="INFO", text=get_status_text(context))
+        self.layout.label(icon="INFO", text=get_status_text())
 
         if state is Mode.UNINITIALIZED:
             self.draw_uninitialised(context)

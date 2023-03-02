@@ -22,12 +22,12 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.ON
+            return get_mode() is Mode.ON
 
         def on_execute(self, context):
             scheduler.ur_in_q.put({"type": "start_freedrive"})
-            set_mode(context, Mode.FREEDRIVE)
-            set_status_text(context, "Freedrive started")
+            set_mode(Mode.FREEDRIVE)
+            set_status_text("Freedrive started")
 
     class StopFreedriveOperator(bpy.types.Operator):
         bl_idname = "urmoco.stop_freedrive"
@@ -35,13 +35,13 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.FREEDRIVE
+            return get_mode() is Mode.FREEDRIVE
 
         def execute(self, context):
             scheduler.ur_in_q.put({"type": "stop_freedrive"})
             context.window_manager.urmoco_state.running_in_modal = False
-            set_mode(context, Mode.ON)
-            set_status_text(context, "Freedrive stopped")
+            set_mode(Mode.ON)
+            set_status_text("Freedrive stopped")
             return {"FINISHED"}
 
     return [StartFreedriveOperator, StopFreedriveOperator]

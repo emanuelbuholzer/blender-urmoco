@@ -20,17 +20,17 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.LOCKED
+            return get_mode() is Mode.LOCKED
 
         def on_execute(self, context):
             scheduler.ur_in_q.put({"type": "unlock"})
-            set_mode(context, Mode.AWAIT_RESPONSE)
-            set_status_text(context, "Unlocking")
+            set_mode(Mode.AWAIT_RESPONSE)
+            set_status_text("Unlocking")
 
         def on_request(self, context, request):
             if request["type"] == "unlock":
-                set_mode(context, Mode.ON)
-                set_status_text(context, "Unlocked robot")
+                set_mode(Mode.ON)
+                set_status_text("Unlocked robot")
                 return {"FINISHED"}
 
     return [UnlockOperator]

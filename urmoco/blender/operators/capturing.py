@@ -24,19 +24,19 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.ON
+            return get_mode() is Mode.ON
 
         _last_frame = None
 
         def on_execute(self, context):
             scheduler.ur_in_q.put({"type": "start_capturing"})
-            set_mode(context, Mode.SHOOTING)
-            set_status_text(context, "Started capturing")
+            set_mode(Mode.SHOOTING)
+            set_status_text("Started capturing")
 
         def on_request(self, context, request):
             if request["type"] == "stop":
-                set_mode(context, Mode.SHOOTING)
-                set_status_text(context, "Stopped move before frame")
+                set_mode(Mode.SHOOTING)
+                set_status_text("Stopped move before frame")
 
             if request["type"] == "move_to_frame":
                 frame = int(request["payload"]["target_frame"])
@@ -53,13 +53,13 @@ def get_operators(config: Config, scheduler: Scheduler):
                         },
                     }
                 )
-                set_status_text(context, f"Moving to frame {frame}")
+                set_status_text(f"Moving to frame {frame}")
 
             if request["type"] == "move_success":
-                set_status_text(context, f"Moved to frame {self._last_frame}")
+                set_status_text(f"Moved to frame {self._last_frame}")
 
             if request["type"] == "move_timeout":
-                set_status_text(context, f"Move timed out (not at target)")
+                set_status_text(f"Move timed out (not at target)")
 
     class StopCapturingOperator(bpy.types.Operator):
         bl_idname = "urmoco.stop_capturing"
@@ -67,13 +67,13 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.SHOOTING
+            return get_mode() is Mode.SHOOTING
 
         def execute(self, context):
             scheduler.ur_in_q.put({"type": "stop_capturing"})
             context.window_manager.urmoco_state.running_in_modal = False
-            set_mode(context, Mode.ON)
-            set_status_text(context, "Stopped capturing")
+            set_mode(Mode.ON)
+            set_status_text("Stopped capturing")
             return {"FINISHED"}
 
     return [StartCapturingOperator, StopCapturingOperator]
