@@ -1,51 +1,23 @@
 import logging
 import queue
 
-import bpy
-
-from urmoco.blender.state import Mode, set_mode, set_status_text
+from urmoco.blender.handlers import handle_reqs
+from urmoco.blender.state import Mode, get_mode, get_running_in_modal
+from urmoco.config import Config
+from urmoco.scheduler import Scheduler
 
 logger = logging.getLogger(__name__)
 
 
-def handle_reqs(req, context):
-    if req["type"] == "error":
-        set_mode(context, Mode.ERROR)
-        set_status_text(context, req["payload"]["message"])
-        logger.error(req)
-        bpy.ops.urmoco.messagebox("INVOKE_DEFAULT", message=req["payload"]["message"])
-        return {"CANCELLED"}
-
-    if req["type"] == "info":
-        set_status_text(context, req["payload"]["status_text"])
-        return
-
-    elif req["type"] == "locked":
-        set_mode(context, Mode.LOCKED)
-        set_status_text(context, "An emergency stop occured")
-        return {"CANCELLED"}
-
-    elif req["type"] == "power_off":
-        set_mode(context, Mode.OFF)
-        set_status_text(context, "Robot powered off")
-        return {"CANCELLED"}
-
-    elif req["type"] == "disconnected":
-        set_mode(context, Mode.DISCONNECTED)
-        set_status_text(context, "Robot disconnected or not powered on")
-        return {"CANCELLED"}
-
-
-def get_urmoco_sync(config, urmoco_out_queue):
+def get_urmoco_sync(config: Config, scheduler: Scheduler):
     def sync():
+        if get_mode() is Mode.UNINITIALIZED:
+            # Returning none will unregister the timer
+            return None
         try:
-            if not bpy.context.window_manager.urmoco_state.running_in_modal:
-                req = urmoco_out_queue.get_nowait()
-                if req["type"] == "stop":
-                    set_mode(bpy.context, Mode.ON)
-                    set_status_text(bpy.context, "Movement stopped")
-
-                handle_reqs(req, bpy.context)
+            if not get_running_in_modal():
+                req = scheduler.ur_out_q.get_nowait()
+                handle_reqs(req, scheduler)
 
         except queue.Empty:
             # No message from the urmoco process, ignoring.

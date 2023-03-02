@@ -1,6 +1,8 @@
 import bpy
 
-from urmoco import Config
+from urmoco.scheduler import Scheduler
+from urmoco.config import Config
+from urmoco.blender.sync import get_urmoco_sync
 from urmoco.blender.operators.base_modal_operator import \
     get_synced_modal_operator_class
 from urmoco.blender.rig import set_ghost_hidden
@@ -8,9 +10,9 @@ from urmoco.blender.state import get_mode, set_mode, set_status_text
 from urmoco.mode import Mode
 
 
-def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
+def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
-        config, urmoco_in_queue, urmoco_out_queue
+        config, scheduler
     )
 
     class PreferencesConfirmationOperator(base_operator):
@@ -19,7 +21,7 @@ def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
 
         @classmethod
         def poll(cls, context):
-            return get_mode(context) is Mode.UNINITIALIZED
+            return get_mode() is Mode.UNINITIALIZED
 
         def on_execute(self, context):
             self.report({"INFO"}, "Starting urmoco")
@@ -31,17 +33,20 @@ def get_operators(config: Config, scheduler, urmoco_in_queue, urmoco_out_queue):
                 "payload"
             ] = context.window_manager.urmoco_preferences.payload
 
+            sync = get_urmoco_sync(config, scheduler)
+            bpy.app.timers.register(sync)
+
             scheduler.start_dfmoco_server(config)
             scheduler.start_backend(config)
 
             scheduler.ur_in_q.put({"type": "hi"})
 
-            set_mode(context, Mode.AWAIT_RESPONSE)
+            set_mode(Mode.AWAIT_RESPONSE)
 
         def on_request(self, context, request):
             if request["type"] == "startup":
-                set_mode(context, Mode.ON)
-                set_status_text(context, "Started urmoco")
+                set_mode(Mode.ON)
+                set_status_text("Started urmoco")
                 set_ghost_hidden(False)
                 return {"FINISHED"}
 
