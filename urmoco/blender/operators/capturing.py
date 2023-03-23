@@ -1,4 +1,5 @@
 import logging
+import queue
 
 import bpy
 
@@ -61,7 +62,7 @@ def get_operators(config: Config, scheduler: Scheduler):
             if request["type"] == "move_timeout":
                 set_status_text(f"Move timed out (not at target)")
 
-    class StopCapturingOperator(bpy.types.Operator):
+    class StopCapturingOperator(base_operator):
         bl_idname = "urmoco.stop_capturing"
         bl_label = "Stop capturing"
 
@@ -69,11 +70,16 @@ def get_operators(config: Config, scheduler: Scheduler):
         def poll(cls, context):
             return get_mode() is Mode.SHOOTING
 
-        def execute(self, context):
-            scheduler.ur_in_q.put({"type": "stop_capturing"})
-            context.window_manager.urmoco_state.running_in_modal = False
-            set_mode(Mode.ON)
-            set_status_text("Stopped capturing")
-            return {"FINISHED"}
+        def on_execute(self, context):
+            scheduler.ur_in_q.put({"type": "stop"})
+            set_mode(Mode.AWAIT_RESPONSE)
+
+        def on_request(self, context, request):
+            if request["type"] == "stop":
+                scheduler.ur_in_q.put({"type": "stop_capturing"})
+                context.window_manager.urmoco_state.running_in_modal = False
+                set_mode(Mode.ON)
+                set_status_text("Stopped capturing")
+                return {"FINISHED"}
 
     return [StartCapturingOperator, StopCapturingOperator]

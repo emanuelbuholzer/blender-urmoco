@@ -103,9 +103,12 @@ def handle_urmoco_request(
             )
 
     if urmoco_req["type"] == "stop":
-        robot.stop()
-        state["move"]["stopping"] = True
-        state["frame"] = -1
-        dfmoco_out_queue.put(
-            {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
-        )
+        if state["move"]["active"]:
+            robot.stop()
+            state["move"]["stopping"] = True
+            state["frame"] = -1
+            dfmoco_out_queue.put(
+                {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
+            )
+        else:
+            urmoco_out_queue.put({"type": "stop"})
