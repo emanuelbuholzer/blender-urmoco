@@ -30,6 +30,18 @@ def get_operators(config: Config, scheduler: Scheduler):
         _last_frame = None
 
         def on_execute(self, context):
+            # Clear DFMoco queues before entering capturing mode to get rid of queued up and potentially old commands
+            while not scheduler.df_in_q.empty():
+                try:
+                    scheduler.df_in_q.get_nowait()
+                except queue.Empty:
+                    pass
+            while not scheduler.df_out_q.empty():
+                try:
+                    scheduler.df_out_q.get_nowait()
+                except queue.Empty:
+                    pass
+
             scheduler.ur_in_q.put({"type": "start_capturing"})
             set_mode(Mode.SHOOTING)
             set_status_text("Started capturing")
