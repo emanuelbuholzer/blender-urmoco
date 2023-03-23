@@ -1,3 +1,6 @@
+import logging
+import queue
+
 import bpy
 
 from urmoco.scheduler import Scheduler
@@ -9,6 +12,7 @@ from urmoco.blender.rig import set_ghost_hidden
 from urmoco.blender.state import get_mode, set_mode, set_status_text
 from urmoco.mode import Mode
 
+logger = logging.getLogger(__name__)
 
 def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
@@ -48,6 +52,13 @@ def get_operators(config: Config, scheduler: Scheduler):
                 set_mode(Mode.ON)
                 set_status_text("Started urmoco")
                 set_ghost_hidden(False)
+
+                def unexpected_load_handler(_a, _b):
+                    if get_mode() not in {Mode.OFF, Mode.UNINITIALIZED}:
+                        scheduler.ur_in_q.put({"type": "power_off"})
+                        logger.warning("urmoco shutdown: new blender file loaded without being powered off")
+                bpy.app.handlers.load_pre.append(unexpected_load_handler)
+
                 return {"FINISHED"}
 
         def invoke(self, context, event):
