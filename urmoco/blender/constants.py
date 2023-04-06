@@ -18,3 +18,9 @@ BONE_WRIST_JOINT_3 = "Wrist joint 3 0"
 BONE_IK_CONTROL = "IK Control"
 
 CONSTRAINT_IK = "IK"
+CONSTRAINT_COPY_LOCATION = "Copy Location"
+CONSTRAINT_COPY_ROTATION = "Copy Rotation"
+
+ACTION_ARMATURE_MODEL = "ArmatureAction"
+
+GROUP_END_EFFECTOR = "End effector"

@@ -3,11 +3,11 @@ import queue
 
 import bpy
 
-from urmoco.scheduler import Scheduler
-from urmoco.config import Config
 from urmoco.blender.constants import ARMATURE_GHOST
-from urmoco.blender.rig import apply_q
 from urmoco.blender.handlers import handle_reqs
+from urmoco.blender.rig import apply_q
+from urmoco.config import Config
+from urmoco.scheduler import Scheduler
 
 logger = logging.getLogger(__name__)
 

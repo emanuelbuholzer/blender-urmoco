@@ -86,6 +86,9 @@ class RobotClient:
             time.sleep(1)
 
             # Send the initial configuration to start correctly with the ghost
+            # TODO: this can time out infinitely
+            # TODO: update roadmap for kat: publication, presspack, website, releases, annecy 2024
+            # Create a bug report for ur_rtde
             joints = self.get_configuration()
             self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
 

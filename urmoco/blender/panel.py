@@ -1,5 +1,6 @@
 import bpy
 
+from urmoco.blender.constants import ARMATURE_MODEL, BONE_WRIST_JOINT_3, CONSTRAINT_IK
 from urmoco.blender.state import Mode, get_mode, get_status_text
 
 
@@ -43,6 +44,7 @@ class URMocoPanel(bpy.types.Panel):
         row.operator("urmoco.power_off")
 
     def draw_uninitialised(self, context):
+        self.layout.label(text="Robot:")
         self.layout.operator("urmoco.startup")
 
     def draw(self, context):
@@ -59,3 +61,21 @@ class URMocoPanel(bpy.types.Panel):
             pass
         else:
             self.draw_initialised(state)
+
+        self.layout.label(text="Animation:")
+        row = self.layout.row()
+        row.enabled = state is not Mode.AWAIT_RESPONSE
+        ik_enabled = (
+            bpy.data.objects[ARMATURE_MODEL]
+            .pose.bones[BONE_WRIST_JOINT_3]
+            .constraints[CONSTRAINT_IK]
+            .enabled
+        )
+        if ik_enabled:
+            row.operator("urmoco.use_fk_rig")
+        else:
+            row.operator("urmoco.use_ik_rig")
+
+        row = self.layout.row()
+        row.enabled = state is not Mode.AWAIT_RESPONSE
+        row.operator("urmoco.insert_keyframe")

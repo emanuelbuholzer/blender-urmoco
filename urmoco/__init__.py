@@ -36,8 +36,7 @@ if "bpy" in sys.modules:
     from .blender.messagebox import MessageBox
     from .blender.operators import get_operators
     from .blender.panel import URMocoPanel
-    from .blender.preferences import (Preferences,
-                                      get_preferences_property_group)
+    from .blender.preferences import Preferences, get_preferences_property_group
     from .blender.state import URMocoState
     from .config import Config
     from .dfmoco.proc import run as run_dfmoco
@@ -88,7 +87,6 @@ if "bpy" in sys.modules:
             bpy.utils.register_class(operator)
 
         bpy.utils.register_class(URMocoPanel)
-
 
     def unregister():
         # Unregister bpy classes

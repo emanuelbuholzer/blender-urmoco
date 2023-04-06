@@ -3,21 +3,19 @@ import queue
 
 import bpy
 
-from urmoco.scheduler import Scheduler
-from urmoco.config import Config
-from urmoco.blender.sync import get_urmoco_sync
-from urmoco.blender.operators.base_modal_operator import \
-    get_synced_modal_operator_class
+from urmoco.blender.operators.base_modal_operator import get_synced_modal_operator_class
 from urmoco.blender.rig import set_ghost_hidden
 from urmoco.blender.state import get_mode, set_mode, set_status_text
+from urmoco.blender.sync import get_urmoco_sync
+from urmoco.config import Config
 from urmoco.mode import Mode
+from urmoco.scheduler import Scheduler
 
 logger = logging.getLogger(__name__)
 
+
 def get_operators(config: Config, scheduler: Scheduler):
-    base_operator = get_synced_modal_operator_class(
-        config, scheduler
-    )
+    base_operator = get_synced_modal_operator_class(config, scheduler)
 
     class PreferencesConfirmationOperator(base_operator):
         bl_idname = "urmoco.startup"
@@ -56,7 +54,10 @@ def get_operators(config: Config, scheduler: Scheduler):
                 def unexpected_load_handler(_a, _b):
                     if get_mode() not in {Mode.OFF, Mode.UNINITIALIZED}:
                         scheduler.ur_in_q.put({"type": "power_off"})
-                        logger.warning("urmoco shutdown: new blender file loaded without being powered off")
+                        logger.warning(
+                            "urmoco shutdown: new blender file loaded without being powered off"
+                        )
+
                 bpy.app.handlers.load_pre.append(unexpected_load_handler)
 
                 return {"FINISHED"}
