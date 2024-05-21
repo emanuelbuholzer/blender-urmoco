@@ -1,0 +1,4 @@
+FROM docker.io/universalrobots/ursim_cb3
+
+RUN mkdir -p ursim/programs && touch ursim/programs/default.installation
+

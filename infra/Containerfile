@@ -1,0 +1,12 @@
+FROM docker.io/ubuntu:24.04
+
+# See https://github.com/opencontainers/runc/issues/2517
+RUN echo 'APT::Sandbox::User "root";' > /etc/apt/apt.conf.d/sandbox-disable
+
+RUN apt-get update && \
+    apt-get install -y git cmake libboost-all-dev pybind11-dev python3 python3-pip python3-pybind11 blender && \
+    rm -rf /var/lib/apt/lists/*
+
+USER 1000
+RUN pip install --break-system-packages --use-pep517 ur_rtde xdg
+

@@ -34,19 +34,10 @@ class RobotClient:
 
             time.sleep(1)
 
-            # If the robot is not off, there's a likely chance of the rtde_control script
-            # being installed on the robot. If the script is running or paused, we have no
-            # way to reconnect. Sadly there's no way with ur_rtde to determine if there's
-            # a script uploaded in advance, so this is our best guess for not running into
-            # any issues. If the rtde_control script was paused and we were to connect, even
-            # though the arm is powered off, we'll likely crash the backend process...
-            #
-            # ... so let's hope for the best :)
             robot_mode = str(self.dashboard_client.robotmode()).strip()
             logger.debug(f"Robot in {robot_mode}")
-            if robot_mode != "Robotmode: POWER_OFF":
-                raise Exception(f"Robot in unknown mode. Cannot start urmoco.")
 
+            self.dashboard_client.stop()
             self.dashboard_client.closePopup()
             self.dashboard_client.closeSafetyPopup()
             time.sleep(0.5)

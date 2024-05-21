@@ -1,0 +1,22 @@
+[Unit]
+Description=URsim
+
+[Container]
+Image=docker.io/universalrobots/ursim_cb3
+PublishPort=5900:5900
+PublishPort=6080:6080
+PublishPort=29999:29999
+PublishPort=30001:30001
+PublishPort=30002:30002
+PublishPort=30003:30003
+PublishPort=30004:30004
+Environment=ROBOT_MODEL=UR10
+Volume=/etc/ursim/programs:/ursim/programs:Z
+
+[Service]
+TimeoutStartSec=900
+Restart=always
+
+[Install]
+WantedBy=multi-user.target default.target
+
