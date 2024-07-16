@@ -21,3 +21,4 @@ tomli==2.0.1
 typing-extensions==4.4.0
 ur-rtde==1.5.5
 xdg==5.1.1
+pyserial

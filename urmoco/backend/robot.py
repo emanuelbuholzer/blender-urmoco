@@ -1,9 +1,7 @@
 import logging
-import time
-
-import dashboard_client
-import rtde_control
-import rtde_receive
+from urmoco.backend.ar4 import RobotClientAR4
+from urmoco.backend.ur10 import RobotClientUR10
+from urmoco.capabilities import CAP_FREEDRIVE, CAP_BRAKE, CAP_POWER
 
 logger = logging.getLogger(__name__)
 
@@ -11,175 +9,72 @@ logger = logging.getLogger(__name__)
 class RobotClient:
     def __init__(self, config, state, urmoco_out_queue):
         self.config = config
-        self.urmoco_out_queue = urmoco_out_queue
-        self.state = state
-        self.rtde_r: rtde_receive.RTDEReceiveInterface = None
-        self.rtde_c: rtde_control.RTDEControlInterface = None
-        self.dashboard_client: dashboard_client.DashboardClient = None
+        if config["type"] == "ar4":
+            self.comm = RobotClientAR4(config, state, urmoco_out_queue)
+        elif config["type"] == "ur10":
+            self.comm = RobotClientUR10(config, state, urmoco_out_queue)
 
     def connect(self):
-        try:
-            host = self.config.get("robot.host")
-
-            logger.debug("Trying to connect to dashboard interface")
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Connecting to the robot"}}
-            )
-
-            self.dashboard_client = dashboard_client.DashboardClient(host)
-            self.dashboard_client.connect()
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Connected"}}
-            )
-
-            time.sleep(1)
-
-            robot_mode = str(self.dashboard_client.robotmode()).strip()
-            logger.debug(f"Robot in {robot_mode}")
-
-            self.dashboard_client.stop()
-            self.dashboard_client.closePopup()
-            self.dashboard_client.closeSafetyPopup()
-            time.sleep(0.5)
-
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Powering on"}}
-            )
-            self.dashboard_client.powerOn()
-            time.sleep(5)
-
-            # Sadly we can't release the brakes after we've set the payload.
-            # We have to release the brakes before that, otherwise our rtde_control
-            # script will be paused and then everything is over.
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Releasing brakes"}}
-            )
-            self.dashboard_client.brakeRelease()
-            time.sleep(2)
-
-            # Now let's setup the rtde interfaces. Let's hope our backend won't crash.
-            # If it did: read all the comments above.
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Setup robot control"}}
-            )
-            logger.debug("Trying to connect to rtde receive interface")
-            self.rtde_r = rtde_receive.RTDEReceiveInterface(host)
-            logger.debug("Trying to connect to rtde control interface")
-            self.rtde_c = rtde_control.RTDEControlInterface(host)
-
-            self.urmoco_out_queue.put(
-                {"type": "info", "payload": {"status_text": "Configuring robot"}}
-            )
-            self.rtde_c.setTcp([0, 0, 0.1, 0, 0, 0])
-            self.rtde_c.setPayload(
-                float(self.config.get("robot.payload")), [0.0, 0.0, 0.0]
-            )
-            time.sleep(1)
-
-            # Send the initial configuration to start correctly with the ghost
-            joints = self.get_configuration()
-            self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
-
-            self.urmoco_out_queue.put({"type": "startup"})
-            return True
-
-        except Exception as e:
-            self.dashboard_client = None
-            self.rtde_r = None
-            self.rtde_c = None
-            logger.debug(f"Connecting to all robot interfaces failed: {e}")
-            self.disconnect()
-            return False
+        return self.comm.connect()
 
     def is_connected(self):
-        lost_connection = False
-
-        if self.dashboard_client is None:
-            lost_connection = True
-        elif not self.dashboard_client.isConnected():
-            logger.debug("Lost connection to the dashboard interface")
-            lost_connection = True
-
-        if self.rtde_r is None:
-            lost_connection = True
-        elif not self.rtde_r.isConnected():
-            logger.debug("Lost connection to the rtde receive interface")
-            lost_connection = True
-
-        if self.rtde_c is None:
-            lost_connection = True
-        elif not self.rtde_c.isConnected():
-            logger.debug("Lost connection to the rtde control interface")
-            lost_connection = True
-
-        return not lost_connection
+        return self.comm.is_connected()
 
     def disconnect(self):
-        if self.dashboard_client is not None:
-            self.dashboard_client.disconnect()
-            logger.debug("Disconnected from the dashboard interface")
-
-        if self.rtde_r is not None:
-            self.rtde_r.disconnect()
-            logger.debug("Disconnected from the rtde receive interface")
-
-        if self.rtde_c is not None:
-            self.rtde_c.disconnect()
-            logger.debug("Disconnected from the rtde control interface")
-
-        self.dashboard_client = None
-        self.rtde_r = None
-        self.rtde_c = None
+        self.comm.disconnect()
 
     def reconnect(self):
-        if not self.dashboard_client.isConnected():
-            logger.debug("Reconnecting to the dashboard interface")
-            self.dashboard_client.connect()
-        if not self.rtde_c.isConnected():
-            logger.debug("Reconnecting to the rtde receive interface")
-            self.rtde_c.reconnect()
-        if not self.rtde_r.isConnected():
-            logger.debug("Reconnecting to the rtde control interface")
-            self.rtde_r.reconnect()
+        self.comm.reconnect()
 
     def move_to_configuration(self, q):
-        speed = self.config.get("robot.joint_move_speed")
-        acceleration = self.config.get("robot.joint_move_acceleration")
-        self.rtde_c.moveJ(list(q), speed, acceleration, True)
+        self.comm.move_to_configuration(q)
 
     def get_configuration(self):
-        return tuple(self.rtde_r.getActualQ())
+        return self.comm.get_configuration()
 
     def get_joints_distance(self, target):
         q = self.get_configuration()
         dist = 0
         for i in range(6):
             dist += (target[i] - q[i]) ** 2
-        return dist**0.5
+        return dist ** 0.5
 
     def get_mode(self):
-        return self.rtde_r.getRobotMode()
+        return self.comm.get_mode()
 
     def get_safety_mode(self):
-        return self.rtde_r.getSafetyMode()
+        return self.comm.get_safety_mode()
 
     def start_freedrive(self):
-        if not self.rtde_c.teachMode():
-            raise Exception("Could not enter freedrive mode")
+        robot_type = self.config["type"]
+        if CAP_FREEDRIVE not in self.config[robot_type]["capabilities"]:
+            logger.error("NO CAP FREEDRIVE")
+            return
+        self.comm.start_freedrive()
 
     def stop_freedrive(self):
-        self.rtde_c.endTeachMode()
+        robot_type = self.config["type"]
+        if CAP_FREEDRIVE not in self.config[robot_type]["capabilities"]:
+            logger.error("NO CAP FREEDRIVE")
+            return
+        self.comm.stop_freedrive()
 
     def stop(self):
-        speed = self.config.get("robot.joint_stop_speeed")
-        self.rtde_c.stopJ(speed)
+        self.comm.stop()
 
     def unlock_protective_stop(self):
-        self.dashboard_client.unlockProtectiveStop()
+        robot_type = self.config["type"]
+        if CAP_BRAKE not in self.config[robot_type]["capabilities"]:
+            logger.error("NO CAP BRAKE")
+            return
+        self.comm.unlock_protective_stop()
 
     def power_off(self):
-        self.rtde_c.stopScript()
-        self.dashboard_client.powerOff()
+        robot_type = self.config["type"]
+        if CAP_POWER not in self.config[robot_type]["capabilities"]:
+            logger.error("NO CAP POWER")
+            return
+        self.comm.power_off()
 
     def is_steady(self):
-        return self.rtde_c.isSteady()
+        return self.comm.is_steady()

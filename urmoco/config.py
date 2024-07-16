@@ -7,6 +7,7 @@ from xdg import XDG_CONFIG_HOME
 logger = logging.getLogger(__name__)
 
 defaults = {
+    "type": "ar4",
     "robot": {
         "host": "192.168.5.42",
         "payload": 1,
@@ -18,7 +19,21 @@ defaults = {
         "target_distance_threshold": 0.001,
         "connect_interval_seconds": 5,
         "sync_interval_seconds": 0.1,
+        "capabilities": [
+            "CAP_FREEDRIVE",
+            "CAP_BRAKE",
+            "CAP_POWER"
+        ]
     },
+    "ar4": {
+        "port": "/dev/ttyACM0",
+        "speed": 10,
+        "acceleration": 1,
+        "deceleration": 1,
+        "ramp": 10,
+        "capabilities": [
+        ]
+    }
 }
 
 

@@ -14,6 +14,7 @@ from urmoco.mode import Mode
 
 logger = logging.getLogger(__name__)
 
+
 def get_operators(config: Config, scheduler: Scheduler):
     base_operator = get_synced_modal_operator_class(
         config, scheduler
@@ -30,12 +31,16 @@ def get_operators(config: Config, scheduler: Scheduler):
         def on_execute(self, context):
             self.report({"INFO"}, "Starting urmoco")
 
-            config.config["robot"][
-                "host"
-            ] = context.window_manager.urmoco_preferences.host
-            config.config["robot"][
-                "payload"
-            ] = context.window_manager.urmoco_preferences.payload
+            robot_type = config.config["type"]
+            if robot_type == "ur10":
+                config.config["robot"][
+                    "host"
+                ] = context.window_manager.urmoco_preferences.host
+                config.config["robot"][
+                    "payload"
+                ] = context.window_manager.urmoco_preferences.payload
+            elif robot_type == "ar4":
+                config.config["ar4"]["port"] = context.window_manager.urmoco_preferences.port
 
             sync = get_urmoco_sync(config, scheduler)
             bpy.app.timers.register(sync)
@@ -57,6 +62,7 @@ def get_operators(config: Config, scheduler: Scheduler):
                     if get_mode() not in {Mode.OFF, Mode.UNINITIALIZED}:
                         scheduler.ur_in_q.put({"type": "power_off"})
                         logger.warning("urmoco shutdown: new blender file loaded without being powered off")
+
                 bpy.app.handlers.load_pre.append(unexpected_load_handler)
 
                 return {"FINISHED"}
@@ -65,7 +71,11 @@ def get_operators(config: Config, scheduler: Scheduler):
             return context.window_manager.invoke_props_dialog(self, width=300)
 
         def draw(self, context):
-            self.layout.prop(context.window_manager.urmoco_preferences, "host")
-            self.layout.prop(context.window_manager.urmoco_preferences, "payload")
+            robot_type = config.config["type"]
+            if robot_type == "ur10":
+                self.layout.prop(context.window_manager.urmoco_preferences, "host")
+                self.layout.prop(context.window_manager.urmoco_preferences, "payload")
+            elif robot_type == "ar4":
+                self.layout.prop(context.window_manager.urmoco_preferences, "port")
 
     return [PreferencesConfirmationOperator]

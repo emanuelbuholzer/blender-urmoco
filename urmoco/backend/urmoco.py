@@ -31,7 +31,8 @@ def handle_urmoco_request(
         time.sleep(5)
         robot.unlock_protective_stop()
         time.sleep(3)
-        robot.release_brakes()
+        # TODO: HUH?
+        # robot.release_brakes()
         urmoco_out_queue.put({"type": "unlock"})
 
     if urmoco_req["type"] == "start_capturing":
