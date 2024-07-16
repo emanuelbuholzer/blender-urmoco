@@ -34,7 +34,7 @@ class RobotClientAR4:
         # J to R probably offsets
 
     def connect(self):
-        self.comm = Serial(self.config["ar4"]["port"])
+        self.comm = Serial(self.config.get("ar4.port"))
 
         self._calibrate()
 
@@ -54,7 +54,7 @@ class RobotClientAR4:
 
     def reconnect(self):
         if not self.is_connected():
-            self.comm = Serial(self.config["ar4"]["port"])
+            self.comm = Serial(self.config.get("ar4.port"))
 
     def move_to_configuration(self, q):
         logger.error("MOVE TO CONFIGURATION - VERIFY DEG/RAD")
@@ -77,10 +77,10 @@ class RobotClientAR4:
         # Rm = Ramp
         # W = WristConStart = N
         # Lm = LoopModeStart = 000000
-        speed = self.config["ar4"]["speed"]
-        acceleration = self.config["ar4"]["acceleration"]
-        deceleration = self.config["ar4"]["deceleration"]
-        ramp = self.config["ar4"]["ramp"]
+        speed = self.config.get("ar4.speed")
+        acceleration = self.config.get("ar4.acceleration")
+        deceleration = self.config.get("ar4.deceleration")
+        ramp = self.config.get("ar4.ramp")
         cmd = f"RJA{str(q[0])}B{str(q[1])}C{str(q[2])}D{str(q[3])}E{str(q[4])}F{str(q[5])}J70J80J90Sp{str(speed)}Ac{str(acceleration)}Dc{str(deceleration)}Rm{str(ramp)}WNLm000000\n"
         print(cmd)
         self.comm.write(cmd.encode())

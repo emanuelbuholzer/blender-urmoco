@@ -31,7 +31,7 @@ def get_operators(config: Config, scheduler: Scheduler):
         def on_execute(self, context):
             self.report({"INFO"}, "Starting urmoco")
 
-            robot_type = config.config["type"]
+            robot_type = self.config.get("type")
             if robot_type == "ur10":
                 config.config["robot"][
                     "host"
@@ -71,7 +71,7 @@ def get_operators(config: Config, scheduler: Scheduler):
             return context.window_manager.invoke_props_dialog(self, width=300)
 
         def draw(self, context):
-            robot_type = config.config["type"]
+            robot_type = self.config.get("type")
             if robot_type == "ur10":
                 self.layout.prop(context.window_manager.urmoco_preferences, "host")
                 self.layout.prop(context.window_manager.urmoco_preferences, "payload")

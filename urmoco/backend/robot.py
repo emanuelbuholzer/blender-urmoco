@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 class RobotClient:
     def __init__(self, config, state, urmoco_out_queue):
         self.config = config
-        if config["type"] == "ar4":
+        robot_type = config.get("type")
+        if robot_type == "ar4":
             self.comm = RobotClientAR4(config, state, urmoco_out_queue)
-        elif config["type"] == "ur10":
+        elif robot_type == "ur10":
             self.comm = RobotClientUR10(config, state, urmoco_out_queue)
 
     def connect(self):
@@ -46,15 +47,15 @@ class RobotClient:
         return self.comm.get_safety_mode()
 
     def start_freedrive(self):
-        robot_type = self.config["type"]
-        if CAP_FREEDRIVE not in self.config[robot_type]["capabilities"]:
+        robot_type = self.config.get("type")
+        if CAP_FREEDRIVE not in self.config.get(f"{robot_type}.capabilities"):
             logger.error("NO CAP FREEDRIVE")
             return
         self.comm.start_freedrive()
 
     def stop_freedrive(self):
-        robot_type = self.config["type"]
-        if CAP_FREEDRIVE not in self.config[robot_type]["capabilities"]:
+        robot_type = self.config.get("type")
+        if CAP_FREEDRIVE not in self.config.get(f"{robot_type}.capabilities"):
             logger.error("NO CAP FREEDRIVE")
             return
         self.comm.stop_freedrive()
@@ -63,15 +64,15 @@ class RobotClient:
         self.comm.stop()
 
     def unlock_protective_stop(self):
-        robot_type = self.config["type"]
-        if CAP_BRAKE not in self.config[robot_type]["capabilities"]:
+        robot_type = self.config.get("type")
+        if CAP_BRAKE not in self.config.get(f"{robot_type}.capabilities"):
             logger.error("NO CAP BRAKE")
             return
         self.comm.unlock_protective_stop()
 
     def power_off(self):
-        robot_type = self.config["type"]
-        if CAP_POWER not in self.config[robot_type]["capabilities"]:
+        robot_type = self.config.get("type")
+        if CAP_POWER not in self.config.get(f"{robot_type}.capabilities"):
             logger.error("NO CAP POWER")
             return
         self.comm.power_off()
