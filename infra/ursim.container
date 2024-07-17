@@ -10,7 +10,9 @@ PublishPort=30001:30001
 PublishPort=30002:30002
 PublishPort=30003:30003
 PublishPort=30004:30004
+PublishPort=50002:50002
 Environment=ROBOT_MODEL=UR10
+Volume=/etc/ursim/urcaps:/urcaps:Z
 Volume=/etc/ursim/programs:/ursim/programs:Z
 
 [Service]
