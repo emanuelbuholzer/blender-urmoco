@@ -35,6 +35,7 @@ defaults = {
         "capabilities": [
         ],
         "target_distance_threshold": 0.1,
+        "sync_interval_seconds": 1,
     }
 }
 

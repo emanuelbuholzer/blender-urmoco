@@ -27,6 +27,8 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
             }
             ur_out_q.put(response)
             df_out_q.put(response)
+    elif target_distance >= target_distance_threshold:
+        logger.warning("Robot not within target threshold")
     elif state["move"]["stopping"]:
         if not robot.is_steady():
             logger.debug("Robot not steady yet")
@@ -48,7 +50,7 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
 
     state["move"]["time_elapsed_seconds"] += state["cycle"]["prev_duration_seconds"]
 
-    timeout_seconds = config.get("robot.move_timeout_seconds")
+    timeout_seconds = config.get(f"{robot_type}.move_timeout_seconds")
     if (
         state["move"]["time_elapsed_seconds"] > timeout_seconds
         and not state["move"]["stopping"]

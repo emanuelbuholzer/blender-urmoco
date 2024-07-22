@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
     class SyncedModalOperator(bpy.types.Operator):
         _timer = None
+        robot_type = config.get("type")
 
         def on_request(self, context, request):
             pass
@@ -56,7 +57,7 @@ def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
 
             context.window_manager.urmoco_state.running_in_modal = True
             self._timer = context.window_manager.event_timer_add(
-                config.get("robot.sync_interval_seconds"), window=context.window
+                config.get(f"{self.type}.sync_interval_seconds"), window=context.window
             )
             context.window_manager.modal_handler_add(self)
 

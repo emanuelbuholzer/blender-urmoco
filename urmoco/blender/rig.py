@@ -23,6 +23,17 @@ BONES = [
     BONE_IK_CONTROL,
 ]
 
+BONES = [
+    "Bone",
+    "Bone.002",
+    "Bone.003",
+    "Bone.003",
+    "Bone.004",
+    "Bone.005",
+    "B3Fixup",
+    "IK Control"
+]
+
 def has_constraints(target_armature, target_bone):
     for constraint in (
             bpy.data.objects[target_armature].pose.bones[target_bone].constraints
@@ -50,12 +61,12 @@ def apply_q(target_armature, q):
         prev_constraints_enabled.append(constraint.enabled)
         constraint.enabled = False
 
-    bpy.data.objects["Armature"].pose.bones["Bone"].rotation_euler[1] = q[0]
-    bpy.data.objects["Armature"].pose.bones["Bone.002"].rotation_euler[2] = q[1]
-    bpy.data.objects["Armature"].pose.bones["Bone.003"].rotation_euler[2] = q[2]
-    bpy.data.objects["Armature"].pose.bones["Bone.003"].rotation_euler[1] = q[3]
-    bpy.data.objects["Armature"].pose.bones["Bone.004"].rotation_euler[2] = q[4]
-    bpy.data.objects["Armature"].pose.bones["Bone.005"].rotation_euler[1] = q[5]
+    bpy.data.objects[target_armature].pose.bones["Bone"].rotation_euler[1] = q[0]
+    bpy.data.objects[target_armature].pose.bones["Bone.002"].rotation_euler[2] = q[1]
+    bpy.data.objects[target_armature].pose.bones["Bone.003"].rotation_euler[2] = q[2]
+    bpy.data.objects[target_armature].pose.bones["Bone.003"].rotation_euler[1] = q[3]
+    bpy.data.objects[target_armature].pose.bones["Bone.004"].rotation_euler[2] = q[4]
+    bpy.data.objects[target_armature].pose.bones["Bone.005"].rotation_euler[1] = q[5]
 
     shoulder_pan_select_prev = (
         bpy.data.objects[target_armature].pose.bones["Bone"].bone.select
@@ -84,12 +95,12 @@ def apply_q(target_armature, q):
     bpy.data.objects[target_armature].pose.bones["Bone.005"].bone.select = True
 
     model_bones_select_prev = []
-    #if target_armature == ARMATURE_GHOST:
-    #    for bone in BONES:
-    #        model_bones_select_prev.append(
-    #            bpy.data.objects[ARMATURE_MODEL].pose.bones[bone].bone.select
-    #        )
-    #        bpy.data.objects[ARMATURE_MODEL].pose.bones[bone].bone.select = False
+    if target_armature == ARMATURE_GHOST:
+        for bone in BONES:
+            model_bones_select_prev.append(
+                bpy.data.objects[ARMATURE_MODEL].pose.bones[bone].bone.select
+            )
+            bpy.data.objects[ARMATURE_MODEL].pose.bones[bone].bone.select = False
 
     bpy.ops.pose.visual_transform_apply()
 
@@ -103,11 +114,11 @@ def apply_q(target_armature, q):
         "Bone.005"
     ].matrix = Matrix.LocRotScale(tail_loc, rot, None)
 
-    #if target_armature == ARMATURE_GHOST:
-    #    for i, bone in enumerate(BONES):
-    #        bpy.data.objects[ARMATURE_MODEL].pose.bones[
-    #            bone
-    #        ].bone.select = model_bones_select_prev[i]
+    if target_armature == ARMATURE_GHOST:
+        for i, bone in enumerate(BONES):
+            bpy.data.objects[ARMATURE_MODEL].pose.bones[
+                bone
+            ].bone.select = model_bones_select_prev[i]
 
     bpy.data.objects[target_armature].pose.bones["Bone"].bone.select = shoulder_pan_select_prev
     bpy.data.objects[target_armature].pose.bones["Bone.001"].bone.select = shoulder_lift_select_prev
@@ -116,15 +127,15 @@ def apply_q(target_armature, q):
     bpy.data.objects[target_armature].pose.bones["Bone.004"].bone.select = wrist_joint_2_select_prev
     bpy.data.objects[target_armature].pose.bones["Bone.005"].bone.select = wrist_joint_3_select_prev
 
-
-    bpy.data.objects[target_armature].pose.bones["Bone.005"].constraints[
-        CONSTRAINT_IK
-    ].enabled = ik_enabled_prev
-
     for i, constraint in enumerate(
             bpy.data.objects[target_armature].pose.bones["Bone.005"].constraints
     ):
         constraint.enabled = prev_constraints_enabled[i]
+
+    print(f"IK PREV ENABLED: {ik_enabled_prev}")
+    bpy.data.objects[target_armature].pose.bones["Bone.005"].constraints[
+        CONSTRAINT_IK
+    ].enabled = ik_enabled_prev
 
 
 def get_q(target_armature):
@@ -197,7 +208,6 @@ def get_q(target_armature):
     bpy.data.objects[target_armature].pose.bones["Bone.003"].bone.select = wrist_joint_1_select_prev
     bpy.data.objects[target_armature].pose.bones["Bone.004"].bone.select = wrist_joint_2_select_prev
     bpy.data.objects[target_armature].pose.bones["Bone.005"].bone.select = wrist_joint_3_select_prev
-
 
     return q
 
