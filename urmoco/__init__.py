@@ -28,7 +28,7 @@ if "bpy" in sys.modules:
     from .backend.proc import run as run_urmoco
     from .blender.messagebox import MessageBox
     from .blender.operators import get_operators
-    from .blender.panel import URMocoPanel
+    from .blender.panel import get_urmoco_panel
     from .blender.preferences import (Preferences,
                                       get_preferences_property_group)
     from .blender.state import URMocoState
@@ -60,6 +60,7 @@ if "bpy" in sys.modules:
 
     # Load bpy types which are dependent on queues or configs
     operators = get_operators(config, scheduler)
+    URMocoPanel = get_urmoco_panel(config)
     URMocoPreferences = get_preferences_property_group(config)
 
     def register():

@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
     target_distance = robot.get_joints_distance(state["move"]["target_joints"])
-    target_distance_threshold = config.get("robot.target_distance_threshold")
+    robot_type = config.get("type")
+    target_distance_threshold = config.get(f"{robot_type}.target_distance_threshold")
     if target_distance < target_distance_threshold:
         logger.debug("Reached target within threshold")
         if not robot.is_steady():

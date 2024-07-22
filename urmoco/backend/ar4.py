@@ -1,3 +1,5 @@
+import time
+
 from serial import Serial
 import numpy as np
 import logging
@@ -25,18 +27,30 @@ class RobotClientAR4:
         self.comm = None
 
     def _calibrate(self):
-        logger.info("CALIBRATING")
+
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Calibrating robot"}}
+        )
         # [0.0, -1.0, -4.0, -2.0, 65.0, 0.0]
         self.comm.write("LLA1B1C1D0E0F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
         print(self.comm.readline().decode())
-        self.comm.write("LLA0B0C0D1E1F1G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self.comm.write("LLA0B0C0D0E0F1G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        print(self.comm.readline().decode())
+        self.comm.write("LLA0B0C0D1E1F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
         print(self.comm.readline().decode())
         # J to R probably offsets
 
     def connect(self):
         self.comm = Serial(self.config.get("ar4.port"))
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Connecting to the robot"}}
+        )
+        time.sleep(1)
 
         self._calibrate()
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Calibrated robot successfully"}}
+        )
 
         # Send the initial configuration to start correctly with the ghost
         joints = self.get_configuration()

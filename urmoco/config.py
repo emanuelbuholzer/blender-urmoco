@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 defaults = {
     "type": "ar4",
-    "robot": {
+    "ur10": {
         "host": "192.168.5.42",
         "payload": 1,
         "joint_move_speed": 0.05,
@@ -22,6 +22,7 @@ defaults = {
         "capabilities": [
             "CAP_FREEDRIVE",
             "CAP_BRAKE",
+            "CAP_PRAKE_PROTECTIVE",
             "CAP_POWER"
         ]
     },
@@ -32,7 +33,8 @@ defaults = {
         "deceleration": 1,
         "ramp": 10,
         "capabilities": [
-        ]
+        ],
+        "target_distance_threshold": 0.1,
     }
 }
 
