@@ -41,8 +41,8 @@ def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
                     elif handle_reqs(request, scheduler):
                         return {"CANCELLED"}
 
-                    robot_type = self.config.get("type")
-                    if CAP_LIVE_UPDATE in self.config.get(f"{robot_type}.capabilities"):
+                    robot_type = config.get("type")
+                    if CAP_LIVE_UPDATE in config.get(f"{robot_type}.capabilities"):
                         # While we're in the modal context we want to continue syncing
                         scheduler.ur_in_q.put({"type": "sync"})
 
