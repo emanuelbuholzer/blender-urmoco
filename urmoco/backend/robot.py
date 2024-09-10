@@ -22,7 +22,7 @@ class RobotClient:
         return self.comm.is_connected()
 
     def calibrate(self):
-        return self.comm._calibrate()
+        return self.comm.calibrate()
 
     def disconnect(self):
         self.comm.disconnect()

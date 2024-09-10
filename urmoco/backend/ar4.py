@@ -63,6 +63,8 @@ class RobotClientAR4:
         self.comm.write("LLA0B0C0D1E1F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
         self._verify_calibration_success(self.comm.readline().decode())
 
+    def calibrate(self):
+        self._calibrate()
         logger.info("Successfully calibrated robot")
         self.urmoco_out_queue.put(
             {"type": "calibration_success"}
