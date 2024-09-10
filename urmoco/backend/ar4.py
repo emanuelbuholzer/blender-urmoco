@@ -159,6 +159,7 @@ class RobotClientAR4:
                 "type": "move_success",
                 "payload": {"frame": self.state["move"]["target_frame"]},
             }
+            logger.debug(f"move success {self.state}")
             self.urmoco_out_queue.put(response)
             #ur_out_q.put(response)
             #df_out_q.put(response)
