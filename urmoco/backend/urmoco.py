@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 def handle_urmoco_request(
     urmoco_req, state, robot: RobotClient, urmoco_out_queue, dfmoco_out_queue
 ):
+    if urmoco_req["type"] == "calibration":
+        robot.calibrate()
+
     if urmoco_req["type"] == "power_off":
         urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Powering off"}}

@@ -1,6 +1,6 @@
 import bpy
 
-from urmoco.capabilities import CAP_BRAKE, CAP_FREEDRIVE, CAP_POWER
+from urmoco.capabilities import CAP_BRAKE, CAP_FREEDRIVE, CAP_POWER, CAP_CALIBRATION
 from urmoco.config import Config
 from urmoco.blender.state import Mode, get_mode, get_status_text
 
@@ -52,6 +52,11 @@ def get_urmoco_panel(config: Config):
                 self.layout.label(text="Robot:")
                 row = self.layout.row()
                 row.operator("urmoco.power_off")
+
+            if CAP_CALIBRATION in config.get(f"{self.robot_type}.capabilities"):
+                row = self.layout.row()
+                row.operator("urmoco.calibration")
+
 
         def draw_uninitialised(self, context):
             self.layout.operator("urmoco.startup")
