@@ -30,7 +30,7 @@ BONES = [
     "Bone.003",
     "Bone.004",
     "Bone.005",
-    "B3Fixup",
+    "Bone.006",
     "IK Control"
 ]
 
