@@ -146,6 +146,29 @@ class RobotClientAR4:
             # End pos, goal reached... :-)
             logger.error("HELP?")
             pass
+            self.state["frame"] = -1
+            self.state["move"]["stopping"] = False
+            self.state["move"]["scheduled"] = False
+            self.state["move"]["active"] = False
+            self.state["move"]["target_joints"] = None
+            self.state["move"]["time_elapsed_seconds"] = 0
+            joints = self.get_configuration()
+            self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
+            self.urmoco_out_queue.put({"type": "stop"})
+            response = {
+                "type": "move_success",
+                "payload": {"frame": self.state["move"]["target_frame"]},
+            }
+            self.urmoco_out_queue.put(response)
+            #ur_out_q.put(response)
+            #df_out_q.put(response)
+            # TODO
+            # self.dfmoco_out_queue.put({"type": "stop_motor"})
+            # self.dfmoco_out_queue.put({"type": "stop_all"})
+            # self.dfmoco_out_queue.put(
+            #     {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
+            # )
+
         print(res)
 
     def get_configuration(self):

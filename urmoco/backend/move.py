@@ -49,6 +49,7 @@ def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
             )
 
     state["move"]["time_elapsed_seconds"] += state["cycle"]["prev_duration_seconds"]
+    print(state["move"]["time_elapsed_seconds"])
 
     timeout_seconds = config.get(f"{robot_type}.move_timeout_seconds")
     if (

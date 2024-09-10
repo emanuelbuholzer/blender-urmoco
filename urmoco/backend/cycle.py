@@ -44,8 +44,8 @@ def run_cycle(
         pass
 
     # If the robot is moving we need to handle the move, thus check for timeouts and the completion of the move
-    if state["move"]["active"]:
-        handle_move(config, state, robot, urmoco_out_queue, dfmoco_out_queue)
+    # if state["move"]["active"]:
+    #     handle_move(config, state, robot, urmoco_out_queue, dfmoco_out_queue)
 
     # If we're shooting with Dragonframe we need to handle its requests too
     if state["shooting"]:
