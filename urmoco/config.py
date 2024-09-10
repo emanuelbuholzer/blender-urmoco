@@ -34,8 +34,9 @@ defaults = {
         "ramp": 10,
         "capabilities": [
         ],
-        "target_distance_threshold": 0.1,
+        "target_distance_threshold": 1.1,
         "sync_interval_seconds": 1,
+        "move_timeout_seconds": 15,
     }
 }
 

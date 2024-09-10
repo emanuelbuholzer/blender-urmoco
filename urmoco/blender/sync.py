@@ -22,6 +22,8 @@ def get_urmoco_sync(config: Config, scheduler: Scheduler):
         except queue.Empty:
             # No message from the urmoco process, ignoring.
             pass
-        return config.get("robot.sync_interval_seconds")
+
+        robot_type = config.get("type")
+        return config.get(f"{robot_type}.sync_interval_seconds")
 
     return sync

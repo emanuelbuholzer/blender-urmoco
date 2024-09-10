@@ -37,16 +37,25 @@ def get_operators(config: Config, scheduler: Scheduler):
             if request["type"] == "stop":
                 set_mode(Mode.ON)
                 set_status_text("Stopped before target")
+                # scheduler.ur_in_q.put({"type": "sync"})
                 return {"CANCELLED"}
 
             if request["type"] == "move_success":
                 set_mode(Mode.ON)
                 set_status_text("Stopped at target")
+                # scheduler.ur_in_q.put({"type": "sync"})
                 return {"FINISHED"}
 
             if request["type"] == "move_timeout":
                 set_mode(Mode.ON)
                 set_status_text(f"Move timed out (not at target)")
+                # scheduler.ur_in_q.put({"type": "sync"})
+                return {"CANCELLED"}
+
+            if request["type"] == "move_cancelled":
+                set_mode(Mode.ON)
+                set_status_text(f"TODO")
+                scheduler.ur_in_q.put({"type": "sync"})
                 return {"CANCELLED"}
 
     return [TransferPoseOperator]
