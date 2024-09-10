@@ -215,6 +215,7 @@ class RobotClientAR4:
         valR = res[iR + 1: iEnd]
 
         q_deg = [float(valA), float(valB), float(valC), float(valD), float(valE), float(valF)]
+        logger.error(f"CURRENT CONFIGURATION: {q_deg}")
         p_xyzuvw = [float(valG), float(valH), float(valI), float(valJ), float(valK), float(valL)]
         speed_violation = True if valM == "1" else False
         debug = valN
