@@ -33,6 +33,7 @@ defaults = {
         "deceleration": 1,
         "ramp": 10,
         "capabilities": [
+            "CAP_CALIBRATION"
         ],
         "target_distance_threshold": 1.1,
         "sync_interval_seconds": 1,

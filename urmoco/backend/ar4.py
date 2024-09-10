@@ -74,7 +74,6 @@ class RobotClientAR4:
             self.comm = Serial(self.config.get("ar4.port"))
 
     def move_to_configuration(self, q):
-        logger.error("MOVE TO CONFIGURATION - VERIFY DEG/RAD")
         q = np.rad2deg(q)
         # Speed, Acceleration, Deceleration, Ramp
         # RJA0B0C-89E0F0J70J80J90SP25Ac10Dc10Rm100WNLm00000
@@ -99,7 +98,6 @@ class RobotClientAR4:
         deceleration = self.config.get("ar4.deceleration")
         ramp = self.config.get("ar4.ramp")
         cmd = f"RJA{str(q[0])}B{str(q[1])}C{str(q[2])}D{str(q[3])}E{str(q[4])}F{str(q[5])}J70J80J90Sp{str(speed)}Ac{str(acceleration)}Dc{str(deceleration)}Rm{str(ramp)}WNLm000000\n"
-        print(cmd)
         self.comm.write(cmd.encode())
 
         res: str = self.comm.readline().decode()
@@ -117,19 +115,13 @@ class RobotClientAR4:
             # HELP? Already robot pos?
             logger.error("HELP?")
             pass
+        print(res)
 
     def get_configuration(self):
-        logger.info("Requesting position, potentially something is alarming")
         self.comm.write("RP\n".encode())
-        # A45.000B0.000C-88.992D0.000E0.000F0.000G48.676H48.676I738.359J45.000K1.008L0.000P0.000Q0.00R0.00\r\n"
         res = self.comm.readline().decode()
-        print(res)
-        logger.info(f"Request position result: {repr(res)}")
-
         iA = res.index("A")
-        print(type(iA))
         iB = res.index("B")
-        print(type(iB))
         iC = res.index("C")
         iD = res.index("D")
         iE = res.index("E")
@@ -175,8 +167,6 @@ class RobotClientAR4:
         j7_pos = valP
         j8_pos = valQ
         j9_pos = valR
-        print("Q")
-        print(q_deg)
         logger.error(f"speed violation: {speed_violation}, flag: {flag}")
         return tuple(np.deg2rad(q_deg))
 
