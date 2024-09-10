@@ -40,6 +40,9 @@ class RobotClientAR4:
         print(self.comm.readline().decode())
         # J to R probably offsets
 
+    def _parse_rj_response(self):
+        pass
+
     def connect(self):
         self.comm = Serial(self.config.get("ar4.port"))
         self.urmoco_out_queue.put(
@@ -98,7 +101,20 @@ class RobotClientAR4:
         cmd = f"RJA{str(q[0])}B{str(q[1])}C{str(q[2])}D{str(q[3])}E{str(q[4])}F{str(q[5])}J70J80J90Sp{str(speed)}Ac{str(acceleration)}Dc{str(deceleration)}Rm{str(ramp)}WNLm000000\n"
         print(cmd)
         self.comm.write(cmd.encode())
-        print(self.comm.readline().decode())
+
+        res: str = self.comm.readline().decode()
+        if res.startswith("ER"):
+            # Kinematic error
+            logger.error("Kinematic error")
+            pass
+        elif res.startswith("EL"):
+            # Axis fault
+            logger.error("Axis error")
+            pass
+        else:
+            # HELP? Already robot pos?
+            logger.error("HELP?")
+            pass
 
     def get_configuration(self):
         logger.info("Requesting position, potentially something is alarming")
@@ -159,7 +175,7 @@ class RobotClientAR4:
         j9_pos = valR
         print("Q")
         print(q_deg)
-        logger.error("GET_CONFIGURATION - VERIFY DEG/RAD")
+        logger.error(f"speed violation: {speed_violation}, flag: {flag}")
         return tuple(np.deg2rad(q_deg))
 
     ####
