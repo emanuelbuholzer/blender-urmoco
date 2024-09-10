@@ -106,10 +106,12 @@ class RobotClientAR4:
         if res.startswith("ER"):
             # Kinematic error
             logger.error("Kinematic error")
+            self.urmoco_out_queue.put({"type": "move_cancelled"})
             pass
         elif res.startswith("EL"):
             # Axis fault
             logger.error("Axis error")
+            self.urmoco_out_queue.put({"type": "move_cancelled"})
             pass
         else:
             # HELP? Already robot pos?
