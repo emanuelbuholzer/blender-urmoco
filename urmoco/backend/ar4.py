@@ -154,7 +154,7 @@ class RobotClientAR4:
             self.state["move"]["time_elapsed_seconds"] = 0
             joints = self.get_configuration()
             self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
-            self.urmoco_out_queue.put({"type": "stop"})
+            #self.urmoco_out_queue.put({"type": "stop"})
             response = {
                 "type": "move_success",
                 "payload": {"frame": self.state["move"]["target_frame"]},

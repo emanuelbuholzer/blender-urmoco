@@ -84,7 +84,7 @@ def handle_urmoco_request(
                     {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
                 )
         else:
-            logger.debug("A move is already active. Ignoring.")
+            logger.debug(f"A move is already active. Ignoring. State {state}")
 
     if urmoco_req["type"] == "sync":
         joints = robot.get_configuration()
