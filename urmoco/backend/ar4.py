@@ -26,22 +26,47 @@ class RobotClientAR4:
         self.state = state
         self.comm = None
 
-    def _calibrate(self):
+    def _verify_calibration_success(self, calibration_response: str):
+        if calibration_response.startswith("E"):
+            failing_joint = calibration_response[2]
+            status_text = f"Calibration failed. Could not calibrate joint {failing_joint}"
+            logger.error(status_text)
+            self.urmoco_out_queue.put(
+                {"type": "calibration_failure", "payload": {"status_text": status_text}}
+            )
 
+    def _calibrate(self):
+        logger.info("Calibrating robot")
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating robot"}}
         )
-        # [0.0, -1.0, -4.0, -2.0, 65.0, 0.0]
-        self.comm.write("LLA1B1C1D0E0F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
-        print(self.comm.readline().decode())
-        self.comm.write("LLA0B0C0D0E0F1G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
-        print(self.comm.readline().decode())
-        self.comm.write("LLA0B0C0D1E1F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
-        print(self.comm.readline().decode())
-        # J to R probably offsets
+        time.sleep(1.5)
 
-    def _parse_rj_response(self):
-        pass
+        logger.info("Calibrating joint 1, 2 and 3")
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Calibrating joint 1, 2 and 3"}}
+        )
+        self.comm.write("LLA1B1C1D0E0F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self._verify_calibration_success(self.comm.readline().decode())
+
+        logger.info("Calibrating joint 6")
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Calibrating joint 6"}}
+        )
+        self.comm.write("LLA0B0C0D0E0F1G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self._verify_calibration_success(self.comm.readline().decode())
+
+        logger.info("Calibrating joint 4 and 5")
+        self.urmoco_out_queue.put(
+            {"type": "info", "payload": {"status_text": "Calibrating joint 4 and 5"}}
+        )
+        self.comm.write("LLA0B0C0D1E1F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self._verify_calibration_success(self.comm.readline().decode())
+
+        logger.info("Successfully calibrated robot")
+        self.urmoco_out_queue.put(
+            {"type": "calibration_success"}
+        )
 
     def connect(self):
         self.comm = Serial(self.config.get("ar4.port"))
@@ -68,6 +93,9 @@ class RobotClientAR4:
     def disconnect(self):
         self.comm.write("CL\n".encode())
         self.comm.close()
+
+    def power_off(self):
+        pass
 
     def reconnect(self):
         if not self.is_connected():
@@ -113,6 +141,7 @@ class RobotClientAR4:
             pass
         else:
             # HELP? Already robot pos?
+            # End pos, goal reached... :-)
             logger.error("HELP?")
             pass
         print(res)

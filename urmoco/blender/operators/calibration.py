@@ -51,6 +51,6 @@ def get_operators(config: Config, scheduler: Scheduler):
 
             if request["type"] == "calibration_failure":
                 set_mode(Mode.ON)
-                set_status_text("Calibration failed")
+                set_status_text(request["payload"]["status_text"])
 
     return [CalibrationOperator]
