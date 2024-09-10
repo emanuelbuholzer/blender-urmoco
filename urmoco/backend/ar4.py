@@ -176,8 +176,3 @@ class RobotClientAR4:
 
     def is_steady(self):
         return True
-
-
-
-
-

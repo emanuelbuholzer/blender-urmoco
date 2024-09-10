@@ -3,6 +3,7 @@ import queue
 
 import bpy
 
+from urmoco.capabilities import CAP_LIVE_UPDATE
 from urmoco.scheduler import Scheduler
 from urmoco.config import Config
 from urmoco.blender.constants import ARMATURE_GHOST
@@ -41,8 +42,10 @@ def get_synced_modal_operator_class(config: Config, scheduler: Scheduler):
                     elif handle_reqs(request, scheduler):
                         return {"CANCELLED"}
 
-                    # While we're in the modal context we want to continue syncing
-                    scheduler.ur_in_q.put({"type": "sync"})
+                    robot_type = self.config.get("type")
+                    if CAP_LIVE_UPDATE in self.config.get(f"{robot_type}.capabilities"):
+                        # While we're in the modal context we want to continue syncing
+                        scheduler.ur_in_q.put({"type": "sync"})
 
                 except queue.Empty:
                     pass
