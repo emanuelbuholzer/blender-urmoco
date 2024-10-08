@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def handle_reqs(req, scheduler: Scheduler):
+    logger.error(f"RECV HANDL REGS {req['type']}")
+
     if req["type"] == "error":
         set_mode(Mode.ERROR)
         set_status_text(req["payload"]["message"])

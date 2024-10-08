@@ -53,22 +53,8 @@ def handle_urmoco_request(
         )
 
     if urmoco_req["type"] == "transfer":
-        joints = np.rad2deg(list(urmoco_req["payload"]["target_joints"]))
-        current_joints = robot.get_configuration()
-        target_joints = []
-        for i, joint in enumerate(joints):
-            upper_mod = joint % 360
-            lower_mod = joint % -360
-            upper_dist = (current_joints[i] - upper_mod) ** 2
-            lower_dist = (current_joints[i] - lower_mod) ** 2
-            if upper_dist <= lower_dist:
-                target_joints.append(np.deg2rad(upper_mod))
-            else:
-                target_joints.append(np.deg2rad(lower_mod))
+        target_joints = np.rad2deg(list(urmoco_req["payload"]["target_joints"]))
 
-        robot.move_to_configuration(target_joints)
-        state["move"]["active"] = True
-        state["move"]["target_joints"] = target_joints
         if "target_frame" in urmoco_req["payload"].keys():
             state["move"]["target_frame"] = urmoco_req["payload"]["target_frame"]
             dfmoco_out_queue.put(
@@ -82,6 +68,8 @@ def handle_urmoco_request(
             dfmoco_out_queue.put(
                 {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
             )
+
+        robot.move_to_configuration(np.deg2rad(target_joints))
 
     if urmoco_req["type"] == "sync":
         joints = robot.get_configuration()

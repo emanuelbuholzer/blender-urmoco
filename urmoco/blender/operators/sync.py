@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 
 from urmoco.scheduler import Scheduler
 from urmoco.config import Config
@@ -30,6 +31,7 @@ def get_operators(config: Config, scheduler: Scheduler):
         def on_request(self, context, request):
             if request["type"] == "sync":
                 new_configuration = get_q(ARMATURE_GHOST)
+                logger.error(f"Sync: new configuration {new_configuration}")
                 apply_q(ARMATURE_MODEL, new_configuration)
                 set_status_text("Synced pose from physical robot")
                 return {"FINISHED"}

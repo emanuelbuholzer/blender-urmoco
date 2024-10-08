@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def handle_move(config, state, robot: RobotClient, ur_out_q, df_out_q):
+    return
     target_distance = robot.get_joints_distance(state["move"]["target_joints"])
     robot_type = config.get("type")
     target_distance_threshold = config.get(f"{robot_type}.target_distance_threshold")

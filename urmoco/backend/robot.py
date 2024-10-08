@@ -7,11 +7,11 @@ logger = logging.getLogger(__name__)
 
 
 class RobotClient:
-    def __init__(self, config, state, urmoco_out_queue):
+    def __init__(self, config, state, urmoco_out_queue, dfmoco_out_queue):
         self.config = config
         robot_type = config.get("type")
         if robot_type == "ar4":
-            self.comm = RobotClientAR4(config, state, urmoco_out_queue)
+            self.comm = RobotClientAR4(config, state, urmoco_out_queue, dfmoco_out_queue)
         elif robot_type == "ur10":
             self.comm = RobotClientUR10(config, state, urmoco_out_queue)
 

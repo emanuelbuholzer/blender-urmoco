@@ -14,7 +14,7 @@ def run(config, urmoco_in_queue, dfmoco_in_queue, urmoco_out_queue, dfmoco_out_q
     # the first cycle.
     state = get_initial_state()
 
-    robot = RobotClient(config, state, urmoco_out_queue)
+    robot = RobotClient(config, state, urmoco_out_queue, dfmoco_out_queue)
 
     # Try connecting to the robot until the robot is reachable
     robot.connect()
