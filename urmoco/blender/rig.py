@@ -47,8 +47,6 @@ def has_constraints(target_armature, target_bone):
 
 
 def apply_q(target_armature, q):
-    logging.error(f"Applying to armature {target_armature} the following configuration: {q}")
-
     ik_enabled_prev = (
         bpy.data.objects[target_armature]
         .pose.bones["Bone.005"]
@@ -109,10 +107,10 @@ def apply_q(target_armature, q):
 
     bpy.ops.pose.visual_transform_apply()
 
-    tail_loc = bpy.data.objects[target_armature].pose.bones["IK Control"].tail
+    tail_loc = bpy.data.objects[target_armature].pose.bones["Bone.005"].tail
     _head_loc, rot, _scale = (
         bpy.data.objects[target_armature]
-        .pose.bones["IK Control"]
+        .pose.bones["Bone.005"]
         .matrix.decompose()
     )
     bpy.data.objects[target_armature].pose.bones[
