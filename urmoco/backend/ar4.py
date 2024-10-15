@@ -53,7 +53,7 @@ class RobotClientAR4:
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating joint 6"}}
         )
-        self.comm.write(f"LLA1B1C1D0E0F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
+        self.comm.write(f"LLA0B0C0D0E0F1G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
         if not self._verify_calibration_success(self.comm.readline().decode()):
             return False
 
@@ -61,7 +61,7 @@ class RobotClientAR4:
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating joint 4 and 5"}}
         )
-        self.comm.write(f"LLA1B1C1D0E0F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
+        self.comm.write(f"LLA1B1C1D1E1F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
         if not self._verify_calibration_success(self.comm.readline().decode()):
             return False
 
