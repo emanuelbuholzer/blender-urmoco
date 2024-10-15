@@ -34,11 +34,19 @@ class RobotClientAR4:
         )
         time.sleep(1.5)
 
+        calibration = self.config.get("ar4.calibration")
+        J1calstart = calibration[0]
+        J2calstart = calibration[1]
+        J3calstart = calibration[2]
+        J4calstart = calibration[3]
+        J5calstart = calibration[4]
+        J6calstart = calibration[5]
+
         logger.info("Calibrating joint 1, 2 and 3")
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating joint 1, 2 and 3"}}
         )
-        self.comm.write("LLA1B1C1D0E0F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self.comm.write(f"LLA1B1C1D0E0F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
         if not self._verify_calibration_success(self.comm.readline().decode()):
             return False
 
@@ -46,7 +54,7 @@ class RobotClientAR4:
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating joint 6"}}
         )
-        self.comm.write("LLA0B0C0D0E0F1G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self.comm.write(f"LLA1B1C1D0E0F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
         if not self._verify_calibration_success(self.comm.readline().decode()):
             return False
 
@@ -54,7 +62,7 @@ class RobotClientAR4:
         self.urmoco_out_queue.put(
             {"type": "info", "payload": {"status_text": "Calibrating joint 4 and 5"}}
         )
-        self.comm.write("LLA0B0C0D1E1F0G0H0I0J0K1L4M2N25O0P0Q0R0\n".encode())
+        self.comm.write(f"LLA1B1C1D0E0F0G0H0I0J{J1calstart}K{J2calstart}L{J3calstart}M{J4calstart}N{J5calstart}O{J6calstart}0P0Q0R0\n".encode())
         if not self._verify_calibration_success(self.comm.readline().decode()):
             return False
 
@@ -84,10 +92,11 @@ class RobotClientAR4:
         )
         time.sleep(1)
 
-        # self._calibrate()
-        # self.urmoco_out_queue.put(
-        #     {"type": "info", "payload": {"status_text": "Calibrated robot successfully"}}
-        # )
+        if self.config.get("ar4.calibrate_on_startup"):
+            self._calibrate()
+            self.urmoco_out_queue.put(
+                {"type": "info", "payload": {"status_text": "Calibrated robot successfully"}}
+            )
 
         # Send the initial configuration to start correctly with the ghost
         joints = self.get_configuration()
@@ -113,11 +122,6 @@ class RobotClientAR4:
     def move_to_configuration(self, qw):
         self.state["move"]["scheduled"] = True
         self.state["move"]["active"] = True
-        q = np.rad2deg(qw)
-        speed = self.config.get("ar4.speed")
-        acceleration = self.config.get("ar4.acceleration")
-        deceleration = self.config.get("ar4.deceleration")
-        ramp = self.config.get("ar4.ramp")
 
         # A = J1
         # B = J2
@@ -135,26 +139,38 @@ class RobotClientAR4:
         # W = WristConStart = N
         # Lm = LoopModeStart = 000000
         # Example: RJA0B0C-89E0F0J70J80J90SP25Ac10Dc10Rm100WNLm00000
+        q = np.rad2deg(qw)
+        speed = self.config.get("ar4.speed")
+        acceleration = self.config.get("ar4.acceleration")
+        deceleration = self.config.get("ar4.deceleration")
+        ramp = self.config.get("ar4.ramp")
         cmd = f"RJA{str(q[0])}B{str(q[1])}C{str(q[2])}D{str(q[3])}E{str(q[4])}F{str(q[5])}J70J80J90Sp{str(speed)}Ac{str(acceleration)}Dc{str(deceleration)}Rm{str(ramp)}WNLm000000\n"
         self.comm.write(cmd.encode())
 
         res: str = self.comm.readline().decode()
         if res.startswith("ER"):
-            # TODO DEBUG
             # Kinematic error
-            logger.error("Kinematic error")
-            self.urmoco_out_queue.put({"type": "move_cancelled"})
-            pass
+            logger.error(f"Kinematic error: {res}")
+            self.urmoco_out_queue.put(
+                {
+                    "type": "error",
+                    "payload": {
+                        "message": f"A kinematic error occurred. Please contact support!"
+                    },
+                }
+            )
         elif res.startswith("EL"):
-            # TODO DEBUG
             # Axis fault
-            logger.error("Axis error")
-            self.urmoco_out_queue.put({"type": "move_cancelled"})
-            pass
+            logger.error(f"Axis error: {res}")
+            self.urmoco_out_queue.put(
+                {
+                    "type": "error",
+                    "payload": {
+                        "message": f"An axis fault occurred. Please contact support!"
+                    },
+                }
+            )
         else:
-            # Goal reached
-            # TODO DEBUG
-            logger.error("Goal reached")
             self.state["frame"] = -1
             self.state["move"]["stopping"] = False
             self.state["move"]["scheduled"] = False
@@ -166,7 +182,6 @@ class RobotClientAR4:
                 {"type": "set_frame", "payload": {"current_frame": self.state["move"]["target_frame"]}}
 
             )
-
             joints = self.get_configuration()
             response = {
                 "type": "move_success",
@@ -178,14 +193,6 @@ class RobotClientAR4:
             self.urmoco_out_queue.put({"type": "sync", "payload": {"joints": joints}})
             self.urmoco_out_queue.put(response)
             self.dfmoco_out_queue.put(response)
-            #ur_out_q.put(response)
-            #df_out_q.put(response)
-            # TODO
-            # self.dfmoco_out_queue.put({"type": "stop_motor"})
-            # self.dfmoco_out_queue.put({"type": "stop_all"})
-            # self.dfmoco_out_queue.put(
-            #     {"type": "set_frame", "payload": {"current_frame": state["frame"]}}
-            # )
 
     def get_configuration(self):
         self.comm.write("RP\n".encode())
@@ -226,22 +233,27 @@ class RobotClientAR4:
         valM = res[iM + 1: iN]
         valN = res[iN + 1: iO]
         valO = res[iO + 1: iP]
-        valP = res[iP + 1: iQ] # j7_pos
-        valQ = res[iQ + 1: iR] # j8_pos
-        valR = res[iR + 1: iEnd] # j9_pos
+        valP = res[iP + 1: iQ]  # j7_pos
+        valQ = res[iQ + 1: iR]  # j8_pos
+        valR = res[iR + 1: iEnd]  # j9_pos
 
         q_deg = [float(valA), float(valB), float(valC), float(valD), float(valE), float(valF)]
-        # TODO DEBUG
-        logger.error(f"q_deg of get_configuration: {q_deg}")
-
-        p_xyzuvw = [float(valG), float(valH), float(valI), float(valJ), float(valK), float(valL)]
+        # p_xyzuvw = [float(valG), float(valH), float(valI), float(valJ), float(valK), float(valL)]
 
         speed_violation = True if valM == "1" else False
         debug = valN if valN else "None"
         flag = valO if valO else "None"
-        # TODO DEBUG
-        logger.error(f"speed violation: {speed_violation}, flag: {flag}, debug: {debug}")
+        if valO:
+            self.urmoco_out_queue.put(
+                {
+                    "type": "error",
+                    "payload": {
+                        "message": f"An emergency stop occured {flag}. Please contact support and check the manual."
+                    },
+                }
+            )
 
+        logger.error(f"speed violation: {speed_violation}, flag: {flag}, debug: {debug}")
         return tuple(np.deg2rad(q_deg))
 
     def get_mode(self):

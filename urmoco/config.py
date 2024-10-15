@@ -32,13 +32,22 @@ defaults = {
         "acceleration": 1,
         "deceleration": 1,
         "ramp": 10,
+        "target_distance_threshold": 1.1,
+        "sync_interval_seconds": 1,
+        "move_timeout_seconds": 15,
+        "calibrate_on_startup": True,
+        "calibration": [
+            0,
+            1,
+            4,
+            2,
+            25,
+            0
+        ],
         "capabilities": [
             "CAP_CALIBRATION",
             "CAP_POWER"
         ],
-        "target_distance_threshold": 1.1,
-        "sync_interval_seconds": 1,
-        "move_timeout_seconds": 15,
     }
 }
 
