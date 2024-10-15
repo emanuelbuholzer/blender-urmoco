@@ -19,7 +19,6 @@ class RobotClientAR4:
         if calibration_response.startswith("E"):
             failing_joint = calibration_response[2]
             status_text = f"Calibration failed. Could not calibrate joint {failing_joint}"
-            logger.error(status_text)
             self.urmoco_out_queue.put(
                 {"type": "calibration_failure", "payload": {"status_text": status_text}}
             )
@@ -80,7 +79,6 @@ class RobotClientAR4:
             self.comm = Serial(self.config.get("ar4.port"))
         except Exception as err: 
             status_text = f"Could not connect to robot: {err}"
-            logger.error(status_text)
             self.urmoco_out_queue.put(
                 {"type": "error", "payload": {"message": status_text}}
             )
@@ -197,7 +195,6 @@ class RobotClientAR4:
     def get_configuration(self):
         self.comm.write("RP\n".encode())
         res = self.comm.readline().decode()
-        logger.error(f"response: {res}")
         iA = res.index("A")
         iB = res.index("B")
         iC = res.index("C")

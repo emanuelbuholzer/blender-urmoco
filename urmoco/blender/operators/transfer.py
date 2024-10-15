@@ -27,8 +27,6 @@ def get_operators(config: Config, scheduler: Scheduler):
 
         def on_execute(self, context):
             configuration = get_q(ARMATURE_MODEL)
-            logger.error(f"TARGET CONFIGURATION {configuration}") 
-            logger.error(f"TARGET CONFIGURATION DEG {np.rad2deg(configuration)}") 
 
             scheduler.ur_in_q.put(
                 {"type": "transfer", "payload": {"target_joints": configuration}}
@@ -37,7 +35,6 @@ def get_operators(config: Config, scheduler: Scheduler):
             set_status_text("Moving to target")
 
         def on_request(self, context, request):
-            logger.error(f"RECEIVED REQ TYPE: {request['type']}")
             if request["type"] == "stop":
                 set_mode(Mode.ON)
                 set_status_text("Stopped before target")
@@ -58,7 +55,7 @@ def get_operators(config: Config, scheduler: Scheduler):
 
             if request["type"] == "move_cancelled":
                 set_mode(Mode.ON)
-                set_status_text(f"TODO")
+                set_status_text(f"Move cancelled")
                 scheduler.ur_in_q.put({"type": "sync"})
                 return {"CANCELLED"}
 
